@@ -31,6 +31,8 @@ extra_css:
 
 markdown_extensions:
   - admonition
+  - attr_list        # enables { .md-button } on links/headings
+  - md_in_html       # renders markdown inside <div markdown="1"> blocks
   - toc:
       permalink: true
   - pymdownx.highlight:

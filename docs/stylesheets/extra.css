@@ -70,6 +70,10 @@ body {
   justify-content: center;
   flex-wrap: wrap;
 }
+/* No permalink pilcrow on the hero title. */
+.ss-hero .headerlink {
+  display: none;
+}
 
 /* Hide the "empty" H1 that MkDocs would render before the hero. */
 .md-typeset .ss-hero + h1,
