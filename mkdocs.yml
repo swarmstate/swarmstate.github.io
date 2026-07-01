@@ -1,0 +1,57 @@
+site_name: swarmstate
+site_description: >-
+  Drop-in state backend for LangGraph, CrewAI & custom agent loops —
+  Rust core, framework-agnostic, built for production.
+site_url: https://swarmstate.github.io/
+repo_url: https://github.com/swarmstate/swarmstate
+repo_name: swarmstate/swarmstate
+edit_uri: ""
+
+theme:
+  name: material
+  # System fonts to match the landing's look-and-feel.
+  font: false
+  palette:
+    scheme: slate
+    primary: black
+    accent: blue
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.sections
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Guide:
+      - The Store: guide/store.md
+      - Snapshots & diffs: guide/snapshots.md
+  - API reference: api.md
+  - Architecture: architecture.md
+  - Roadmap: roadmap.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/swarmstate/swarmstate
