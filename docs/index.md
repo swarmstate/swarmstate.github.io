@@ -18,6 +18,10 @@ Rust core, framework-agnostic, built for production.</p>
 [GitHub](https://github.com/swarmstate/swarmstate){ .md-button }
 </div>
 
+<img class="ss-stack" src="assets/stack.svg" alt="Isometric diagram of the agentic stack: orchestration frameworks (LangGraph, CrewAI, custom loops) on top, swarmstate as the state and checkpointing engine in the middle, and the Rust core with storage backends at the bottom." width="620" height="600" />
+
+<p class="ss-stack-cap">Where swarmstate sits: underneath your orchestration framework, as the fast state &amp; checkpointing engine.</p>
+
 </div>
 
 <div class="ss-features" markdown="1">
@@ -36,8 +40,8 @@ diffs. The GIL is released on the hot paths.
 
 <div class="ss-card" markdown="1">
 ### Deterministic routing
-Rule-based "which agent is next" decisions resolved natively — no LLM tokens
-spent on transitions you can express as rules. *(coming in M2)*
+Rule-based "which agent is next" decisions resolved natively in Rust — no LLM
+tokens spent on transitions you can express as rules.
 </div>
 
 </div>

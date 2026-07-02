@@ -58,6 +58,39 @@ instantiated directly.
 | --- | --- | --- |
 | `diff(base)` | `dict[str, list[tuple[str, str]]]` | `{"added", "removed", "changed"}` → `(namespace, key)` lists describing how to go from `base` to this snapshot |
 
+## `swarmstate.HandoffGraph`
+
+```python
+HandoffGraph(on_cycle: str = "error")
+```
+
+A deterministic, LLM-free routing graph over named nodes with conditional edges.
+`on_cycle` is `"error"` (default) or `"allow"`. See the [Handoff graph
+guide](guide/handoff.md) for the condition mini-language.
+
+**Properties**
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `on_cycle` | `str` | cycle-detection behaviour (`"error"` / `"allow"`) |
+
+**Methods**
+
+| Method | Returns | Description |
+| --- | --- | --- |
+| `add_node(name)` | `None` | register a node with no edges |
+| `add_edge(from_node, to, when=None)` | `None` | add a directed edge, optionally guarded by a `when` condition |
+| `route(node, state=None)` | `str \| None` | first matching outgoing edge's target, or `None` |
+| `nodes()` | `list[str]` | all nodes, sorted |
+| `edges(node)` | `list[tuple[str, str \| None]]` | outgoing `(to, when)` pairs, insertion order |
+| `has_node(node)` | `bool` | whether a node exists |
+| `is_dag()` | `bool` | whether the graph is currently acyclic |
+| `len(graph)` | `int` | number of nodes |
+| `node in graph` | `bool` | membership test |
+
+Raises `ValueError` for an invalid `on_cycle`, an invalid condition, or (when
+`on_cycle="error"`) an edge that would create a cycle.
+
 ## `swarmstate.core_version()`
 
 ```python

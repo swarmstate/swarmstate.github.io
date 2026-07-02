@@ -75,6 +75,22 @@ body {
   display: none;
 }
 
+/* -------- Isometric stack illustration -------- */
+.ss-stack {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  margin: 2.5rem auto 0.5rem;
+}
+.ss-stack-cap {
+  text-align: center;
+  color: var(--ss-muted);
+  font-size: 0.9rem;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
 /* Hide the "empty" H1 that MkDocs would render before the hero. */
 .md-typeset .ss-hero + h1,
 .ss-hero ~ hr:first-of-type {
