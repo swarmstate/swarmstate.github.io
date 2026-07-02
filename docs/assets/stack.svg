@@ -113,14 +113,14 @@
   <ellipse cx="300" cy="748" rx="40" ry="14" fill="#1c2634" stroke="#3a4656" stroke-width="1"/>
   <text class="chip" x="300" y="812" text-anchor="middle" font-size="12.5" fill="#c9d3de">memory</text>
   <!-- redis (planned) -->
-  <path d="M390,748 V788 A40,14 0 0 0 470,788 V748" fill="#10141b" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
-  <ellipse cx="430" cy="748" rx="40" ry="14" fill="#161c26" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
-  <text class="chip" x="430" y="812" text-anchor="middle" font-size="12.5" fill="#6e7681">redis</text>
+  <path d="M390,748 V788 A40,14 0 0 0 470,788 V748" fill="#1b2536" stroke="#5b6b84" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <ellipse cx="430" cy="748" rx="40" ry="14" fill="#243247" stroke="#5b6b84" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text class="chip" x="430" y="812" text-anchor="middle" font-size="12.5" fill="#aeb8c4">redis</text>
   <!-- disk (planned) -->
-  <path d="M520,748 V788 A40,14 0 0 0 600,788 V748" fill="#10141b" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
-  <ellipse cx="560" cy="748" rx="40" ry="14" fill="#161c26" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
-  <text class="chip" x="560" y="812" text-anchor="middle" font-size="12.5" fill="#6e7681">disk</text>
-  <text class="an" x="430" y="830" text-anchor="middle" font-size="10.5" fill="#5b636d">redis · disk — planned</text>
+  <path d="M520,748 V788 A40,14 0 0 0 600,788 V748" fill="#1b2536" stroke="#5b6b84" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <ellipse cx="560" cy="748" rx="40" ry="14" fill="#243247" stroke="#5b6b84" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text class="chip" x="560" y="812" text-anchor="middle" font-size="12.5" fill="#aeb8c4">disk</text>
+  <text class="an" x="430" y="830" text-anchor="middle" font-size="10.5" fill="#8b97a5">redis · disk — planned</text>
 
   <!-- ===================== Right-side notes ===================== -->
   <g>
