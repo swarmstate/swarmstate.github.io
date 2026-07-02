@@ -52,13 +52,5 @@ tokens spent on transitions you can express as rules.
 infrastructure, much like engines such as DuckDB, ClickHouse, Arrow, or Polars can sit
 underneath data applications without replacing them.
 
-Swap your LangGraph checkpointer for a Rust-backed one — **one line, no other change**:
-
-```python
-from swarmstate.integrations.langgraph import SwarmStateSaver
-
-graph = builder.compile(checkpointer=SwarmStateSaver())   # replaces SqliteSaver
-```
-
 See the [Guide](guide/store.md) to get started, or the [API reference](api.md) for the
 full surface.
