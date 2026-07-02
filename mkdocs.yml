@@ -45,12 +45,19 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Why swarmstate: why.md
   - Installation: installation.md
   - Guide:
       - The Store: guide/store.md
       - Snapshots & diffs: guide/snapshots.md
       - Handoff graph: guide/handoff.md
       - LangGraph checkpointer: guide/langgraph.md
+  - Tutorials:
+      - Overview: tutorials/index.md
+      - LangGraph — resumable agents: tutorials/langgraph.md
+      - Custom multi-agent loop: tutorials/custom-loop.md
+      - State portability: tutorials/portability.md
+      - CrewAI — shared memory: tutorials/crewai.md
   - API reference: api.md
   - Architecture: architecture.md
   - Roadmap: roadmap.md
