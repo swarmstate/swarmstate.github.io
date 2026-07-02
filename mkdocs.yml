@@ -6,7 +6,7 @@ site_url: https://swarmstate.github.io/
 repo_url: https://github.com/swarmstate/swarmstate
 repo_name: swarmstate/swarmstate
 edit_uri: ""
-copyright: "© 2026 José Luis Salmerón"
+copyright: "© 2026 Jose L. Salmeron"
 
 theme:
   name: material
