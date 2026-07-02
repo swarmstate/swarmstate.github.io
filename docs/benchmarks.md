@@ -6,6 +6,7 @@ yourself:
 
 ```bash
 pip install "swarmstate[langgraph]" langgraph-checkpoint-sqlite matplotlib
+# or: uv add "swarmstate[langgraph]" langgraph-checkpoint-sqlite matplotlib
 python benchmarks/run.py --iters 5000 --seed 7
 ```
 

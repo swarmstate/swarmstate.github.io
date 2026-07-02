@@ -40,10 +40,10 @@
 }
 .ss-topnav {
   display: flex;
-  flex-grow: 1;
-  justify-content: center;
   align-items: center;
-  gap: 1.4rem;
+  gap: 1.6rem;
+  margin-left: 2rem;
+  margin-right: auto; /* push search + repo to the far right, no overlap */
 }
 .ss-topnav__link {
   color: var(--ss-muted);

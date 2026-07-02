@@ -5,6 +5,7 @@ Build a persistent, resumable LangGraph agent whose checkpoints live in a swarms
 
 ```bash
 pip install "swarmstate[langgraph]"
+# or: uv add "swarmstate[langgraph]"
 ```
 
 ## 1. A minimal graph with a checkpointer

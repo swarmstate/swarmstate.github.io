@@ -35,4 +35,8 @@ optionally persisted to Redis.
     ```bash
     pip install swarmstate                 # core (Store, HandoffGraph)
     pip install "swarmstate[langgraph]"    # + LangGraph checkpointer
+
+    # or with uv
+    uv add swarmstate
+    uv add "swarmstate[langgraph]"
     ```

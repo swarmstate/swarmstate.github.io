@@ -7,6 +7,7 @@ by a swarmstate [`Store`](store.md) (Rust core).
 
 ```bash
 pip install "swarmstate[langgraph]"
+# or: uv add "swarmstate[langgraph]"
 ```
 
 ## One-line swap

@@ -6,6 +6,7 @@ format as the Rust core — so state is readable by any msgpack consumer, in any
 
 ```bash
 pip install "swarmstate[redis]"
+# or: uv add "swarmstate[redis]"
 ```
 
 ## Use it like a `Store`

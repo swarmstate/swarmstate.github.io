@@ -6,6 +6,7 @@ LangGraph app and reads it from a plain custom loop (and vice versa).
 
 ```bash
 pip install "swarmstate[langgraph]"
+# or: uv add "swarmstate[langgraph]"
 ```
 
 ## The shared store

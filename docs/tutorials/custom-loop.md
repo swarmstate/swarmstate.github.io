@@ -7,6 +7,7 @@ state. No LLM tokens are spent on the routing decisions.
 
 ```bash
 pip install swarmstate
+# or: uv add swarmstate
 ```
 
 ## 1. Define the routing rules

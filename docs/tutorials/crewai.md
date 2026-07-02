@@ -7,6 +7,7 @@ checkpoints and be read by other systems.
 
 ```bash
 pip install swarmstate crewai
+# or: uv add swarmstate crewai
 ```
 
 !!! note "How it's built"

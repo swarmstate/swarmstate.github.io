@@ -2,6 +2,8 @@
 
 ```bash
 pip install swarmstate
+# or
+uv add swarmstate
 ```
 
 `swarmstate` ships prebuilt **`cp39-abi3`** wheels for Linux (x86_64/aarch64),
@@ -17,6 +19,10 @@ pip install "swarmstate[langgraph]"   # LangGraph checkpointer adapter
 pip install "swarmstate[crewai]"      # CrewAI state/memory adapter
 pip install "swarmstate[redis]"       # optional Redis backend
 pip install "swarmstate[all]"         # everything above
+
+# with uv
+uv add "swarmstate[langgraph]"
+uv add "swarmstate[all]"
 ```
 
 ## Requirements
