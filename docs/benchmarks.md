@@ -1,6 +1,6 @@
 # Benchmarks
 
-Numbers, not adjectives. These are **reproducible** — run
+Every number here is **reproducible** — run
 [`benchmarks/run.py`](https://github.com/swarmstate/swarmstate/blob/main/benchmarks/run.py)
 yourself:
 
@@ -10,11 +10,11 @@ pip install "swarmstate[langgraph]" langgraph-checkpoint-sqlite matplotlib
 python benchmarks/run.py --iters 5000 --seed 7
 ```
 
-!!! note "Read this first (honesty)"
+!!! warning "Read the setup before comparing"
     - **Release build** (published wheels / `maturin develop --release`). Debug builds
       are several times slower.
     - `SwarmStateSaver` and `InMemorySaver` are **in-memory**; `SqliteSaver` is
-      **file-backed** (persists to disk). The `put` comparison reflects the real cost of
+      **file-backed** (persists to disk). The `put` comparison reflects the cost of
       SQLite-backed persistence as commonly configured; a persistent swarmstate backend
       (redis/disk) is on the [roadmap](roadmap.md).
     - Warm cache, single process. Hardware/versions below.
