@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 860" role="img"
-     aria-label="Isometric architecture of the agentic stack. Top: orchestration frameworks (LangGraph, CrewAI, custom loops). Middle: swarmstate Python API with Store, HandoffGraph and SwarmStateSaver. Bottom: the Rust core (im::HashMap persistent store, msgpack codec, snapshot/diff engine, condition evaluator) over memory/redis/disk backends. Annotations show the drop-in integration API, the PyO3/GIL boundary, the stable msgpack format and abi3 wheels.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="120 0 1040 900" role="img"
+     aria-label="Isometric architecture. Top: orchestration frameworks (LangGraph, CrewAI, custom loops). Middle: the swarmstate Python API, shown as three isometric component blocks — Store, HandoffGraph and SwarmStateSaver. Bottom: the Rust core as four isometric blocks — persistent store, msgpack codec, snapshot/diff engine and condition evaluator — over isometric memory, redis and disk storage cylinders. Side notes describe the drop-in checkpointer API, GIL-released hot paths, the stable msgpack format and abi3 wheels.">
   <defs>
     <style>
       .lbl  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-weight: 700; }
@@ -16,104 +16,131 @@
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto">
       <path d="M1,1 L8,4.5 L1,8 Z" fill="#58a6ff"/>
     </marker>
+    <marker id="darrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#3f5169"/>
+    </marker>
   </defs>
 
-  <!-- ===================== Framework chips (above top layer) ===================== -->
-  <g>
-    <path d="M200,78 L249,150" stroke="#3b4656" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
-    <path d="M360,64 L360,118" stroke="#3b4656" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
-    <path d="M520,78 L471,150" stroke="#3b4656" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
-    <circle cx="249" cy="150" r="2.4" fill="#3b4656"/>
-    <circle cx="360" cy="118" r="2.4" fill="#3b4656"/>
-    <circle cx="471" cy="150" r="2.4" fill="#3b4656"/>
-
-    <rect x="148" y="49" width="104" height="30" rx="9" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="200" y="69" text-anchor="middle" font-size="13" fill="#c9d3de">LangGraph</text>
-    <rect x="316" y="35" width="88" height="30" rx="9" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="360" y="55" text-anchor="middle" font-size="13" fill="#c9d3de">CrewAI</text>
-    <rect x="460" y="49" width="120" height="30" rx="9" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="520" y="69" text-anchor="middle" font-size="13" fill="#c9d3de">custom loops</text>
-  </g>
-
   <!-- ground shadow -->
-  <ellipse cx="360" cy="796" rx="210" ry="28" fill="#000000" opacity="0.30"/>
-
-  <!-- ===================== Layer 3 · Rust core ===================== -->
-  <g>
-    <polygon points="110,660 360,732 360,780 110,708" fill="#141922"/>
-    <polygon points="360,732 610,660 610,708 360,780" fill="#0d1117"/>
-    <polygon points="360,588 610,660 360,732 110,660" fill="#1c212b" stroke="#2f3a4a" stroke-width="0.75"/>
-    <text class="lbl" x="360" y="618" text-anchor="middle" font-size="19" fill="#c9d3de">Rust core</text>
-    <!-- component badges -->
-    <rect x="227" y="630" width="132" height="28" rx="7" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="293" y="649" text-anchor="middle" font-size="12" fill="#c9d3de">persistent store</text>
-    <rect x="373" y="630" width="120" height="28" rx="7" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="433" y="649" text-anchor="middle" font-size="12" fill="#c9d3de">msgpack codec</text>
-    <rect x="236" y="666" width="118" height="28" rx="7" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="295" y="685" text-anchor="middle" font-size="12" fill="#c9d3de">snapshot / diff</text>
-    <rect x="368" y="666" width="116" height="28" rx="7" fill="#12171f" stroke="#2f3a4a"/>
-    <text class="chip" x="426" y="685" text-anchor="middle" font-size="12" fill="#c9d3de">condition eval</text>
-  </g>
-
-  <!-- connector: swarmstate <-> core -->
-  <line x1="360" y1="549" x2="360" y2="584" stroke="#58a6ff" stroke-width="2"
-        marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-  <text class="conn" x="372" y="571" font-size="12" fill="#8b97a5">fast serialization</text>
-
-  <!-- ===================== Layer 2 · swarmstate (highlight) ===================== -->
-  <g filter="url(#glow)">
-    <polygon points="110,425 360,497 360,545 110,473" fill="#0f2a45"/>
-    <polygon points="360,497 610,425 610,473 360,545" fill="#0a1d31"/>
-    <polygon points="360,353 610,425 360,497 110,425" fill="#17395a" stroke="#58a6ff" stroke-width="2"/>
-  </g>
-  <text class="lbl" x="360" y="406" text-anchor="middle" font-size="26" fill="#e6edf3">swarmstate</text>
-  <!-- component badges -->
-  <rect x="176" y="414" width="66" height="28" rx="7" fill="#10273f" stroke="#356da3"/>
-  <text class="chip" x="209" y="433" text-anchor="middle" font-size="12.5" fill="#cfe3ff">Store</text>
-  <rect x="256" y="414" width="124" height="28" rx="7" fill="#10273f" stroke="#356da3"/>
-  <text class="chip" x="318" y="433" text-anchor="middle" font-size="12.5" fill="#cfe3ff">HandoffGraph</text>
-  <rect x="394" y="414" width="150" height="28" rx="7" fill="#10273f" stroke="#356da3"/>
-  <text class="chip" x="469" y="433" text-anchor="middle" font-size="12.5" fill="#cfe3ff">SwarmStateSaver</text>
-  <text class="sub" x="360" y="464" text-anchor="middle" font-size="12.5" fill="#9fc9ff">framework-agnostic Python API · fully typed</text>
-
-  <!-- connector: frameworks <-> swarmstate -->
-  <line x1="360" y1="314" x2="360" y2="349" stroke="#58a6ff" stroke-width="2"
-        marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-  <text class="conn" x="372" y="336" font-size="12" fill="#8b97a5">reads / writes state</text>
+  <ellipse cx="430" cy="834" rx="260" ry="26" fill="#000000" opacity="0.30"/>
 
   <!-- ===================== Layer 1 · Orchestration frameworks ===================== -->
   <g>
-    <polygon points="110,190 360,262 360,310 110,238" fill="#1a2130"/>
-    <polygon points="360,262 610,190 610,238 360,310" fill="#10151e"/>
-    <polygon points="360,118 610,190 360,262 110,190" fill="#273143" stroke="#2f3a4a" stroke-width="0.75"/>
-    <text class="lbl" x="360" y="196" text-anchor="middle" font-size="18" fill="#c9d3de">Orchestration frameworks</text>
+    <polygon points="180,190 430,254 430,294 180,230" fill="#1a2130"/>
+    <polygon points="430,254 680,190 680,230 430,294" fill="#10151e"/>
+    <polygon points="430,126 680,190 430,254 180,190" fill="#273143" stroke="#2f3a4a" stroke-width="0.75"/>
+    <text class="lbl" x="430" y="196" text-anchor="middle" font-size="18" fill="#c9d3de">Orchestration frameworks</text>
   </g>
+  <!-- framework chips -->
+  <path d="M280,79 L336,150" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
+  <path d="M430,64 L430,126" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
+  <path d="M590,79 L524,150" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
+  <circle cx="336" cy="150" r="2.4" fill="#3b4656"/><circle cx="430" cy="126" r="2.4" fill="#3b4656"/><circle cx="524" cy="150" r="2.4" fill="#3b4656"/>
+  <rect x="228" y="49" width="104" height="30" rx="9" fill="#12171f" stroke="#2f3a4a"/>
+  <text class="chip" x="280" y="69" text-anchor="middle" font-size="13" fill="#c9d3de">LangGraph</text>
+  <rect x="386" y="35" width="88" height="30" rx="9" fill="#12171f" stroke="#2f3a4a"/>
+  <text class="chip" x="430" y="55" text-anchor="middle" font-size="13" fill="#c9d3de">CrewAI</text>
+  <rect x="530" y="49" width="120" height="30" rx="9" fill="#12171f" stroke="#2f3a4a"/>
+  <text class="chip" x="590" y="69" text-anchor="middle" font-size="13" fill="#c9d3de">custom loops</text>
 
-  <!-- ===================== Right-side technical annotations ===================== -->
+  <!-- connector: frameworks <-> swarmstate -->
+  <line x1="430" y1="300" x2="430" y2="340" stroke="#58a6ff" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text class="conn" x="444" y="324" font-size="12" fill="#8b97a5">reads / writes state</text>
+
+  <!-- ===================== Layer 2 · swarmstate (highlight) ===================== -->
+  <text class="lbl" x="430" y="356" text-anchor="middle" font-size="26" fill="#e6edf3">swarmstate</text>
+  <g filter="url(#glow)">
+    <polygon points="180,430 430,494 430,510 180,446" fill="#0f2a45"/>
+    <polygon points="430,494 680,430 680,446 430,510" fill="#0a1d31"/>
+    <polygon points="430,366 680,430 430,494 180,430" fill="#153350" stroke="#58a6ff" stroke-width="2"/>
+  </g>
+  <!-- swarmstate component cubes (Store / HandoffGraph / SwarmStateSaver) -->
+  <!-- Store @300 -->
+  <polygon points="266,383 300,400 300,430 266,413" fill="#0f3054"/>
+  <polygon points="300,400 334,383 334,413 300,430" fill="#0a2440"/>
+  <polygon points="300,366 334,383 300,400 266,383" fill="#1d4f7d" stroke="#58a6ff" stroke-width="1.1"/>
+  <text class="chip" x="300" y="449" text-anchor="middle" font-size="13" fill="#cfe3ff">Store</text>
+  <!-- HandoffGraph @430 -->
+  <polygon points="396,383 430,400 430,430 396,413" fill="#0f3054"/>
+  <polygon points="430,400 464,383 464,413 430,430" fill="#0a2440"/>
+  <polygon points="430,366 464,383 430,400 396,383" fill="#1d4f7d" stroke="#58a6ff" stroke-width="1.1"/>
+  <text class="chip" x="430" y="449" text-anchor="middle" font-size="13" fill="#cfe3ff">HandoffGraph</text>
+  <!-- SwarmStateSaver @560 -->
+  <polygon points="526,383 560,400 560,430 526,413" fill="#0f3054"/>
+  <polygon points="560,400 594,383 594,413 560,430" fill="#0a2440"/>
+  <polygon points="560,366 594,383 560,400 526,383" fill="#1d4f7d" stroke="#58a6ff" stroke-width="1.1"/>
+  <text class="chip" x="560" y="449" text-anchor="middle" font-size="13" fill="#cfe3ff">SwarmStateSaver</text>
+
+  <!-- connector: swarmstate <-> core -->
+  <line x1="430" y1="514" x2="430" y2="552" stroke="#58a6ff" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text class="conn" x="444" y="537" font-size="12" fill="#8b97a5">fast serialization</text>
+
+  <!-- ===================== Layer 3 · Rust core ===================== -->
+  <text class="lbl" x="430" y="566" text-anchor="middle" font-size="18" fill="#c9d3de">Rust core · PyO3</text>
+  <polygon points="180,640 430,704 430,720 180,656" fill="#141922"/>
+  <polygon points="430,704 680,640 680,656 430,720" fill="#0d1117"/>
+  <polygon points="430,576 680,640 430,704 180,640" fill="#1c212b" stroke="#2f3a4a" stroke-width="0.75"/>
+  <!-- core component cubes -->
+  <!-- persistent store @250 -->
+  <polygon points="220,597 250,612 250,640 220,625" fill="#1b2432"/>
+  <polygon points="250,612 280,597 280,625 250,640" fill="#12181f"/>
+  <polygon points="250,582 280,597 250,612 220,597" fill="#2a3444" stroke="#3a4656" stroke-width="1"/>
+  <text class="chip" x="250" y="659" text-anchor="middle" font-size="12" fill="#c9d3de">persistent store</text>
+  <!-- msgpack codec @377 -->
+  <polygon points="347,597 377,612 377,640 347,625" fill="#1b2432"/>
+  <polygon points="377,612 407,597 407,625 377,640" fill="#12181f"/>
+  <polygon points="377,582 407,597 377,612 347,597" fill="#2a3444" stroke="#3a4656" stroke-width="1"/>
+  <text class="chip" x="377" y="659" text-anchor="middle" font-size="12" fill="#c9d3de">msgpack codec</text>
+  <!-- snapshot / diff @504 -->
+  <polygon points="474,597 504,612 504,640 474,625" fill="#1b2432"/>
+  <polygon points="504,612 534,597 534,625 504,640" fill="#12181f"/>
+  <polygon points="504,582 534,597 504,612 474,597" fill="#2a3444" stroke="#3a4656" stroke-width="1"/>
+  <text class="chip" x="504" y="659" text-anchor="middle" font-size="12" fill="#c9d3de">snapshot / diff</text>
+  <!-- condition eval @631 -->
+  <polygon points="601,597 631,612 631,640 601,625" fill="#1b2432"/>
+  <polygon points="631,612 661,597 661,625 631,640" fill="#12181f"/>
+  <polygon points="631,582 661,597 631,612 601,597" fill="#2a3444" stroke="#3a4656" stroke-width="1"/>
+  <text class="chip" x="631" y="659" text-anchor="middle" font-size="12" fill="#c9d3de">condition eval</text>
+
+  <!-- core -> storage connectors -->
+  <line x1="430" y1="720" x2="300" y2="732" stroke="#3f5169" stroke-width="1.4" marker-end="url(#darrow)"/>
+  <line x1="430" y1="722" x2="430" y2="732" stroke="#3f5169" stroke-width="1.4" marker-end="url(#darrow)"/>
+  <line x1="430" y1="720" x2="560" y2="732" stroke="#3f5169" stroke-width="1.4" marker-end="url(#darrow)"/>
+
+  <!-- ===================== Storage cylinders ===================== -->
+  <!-- memory (available) -->
+  <path d="M260,748 V788 A40,14 0 0 0 340,788 V748" fill="#141922" stroke="#3a4656" stroke-width="1"/>
+  <ellipse cx="300" cy="748" rx="40" ry="14" fill="#1c2634" stroke="#3a4656" stroke-width="1"/>
+  <text class="chip" x="300" y="812" text-anchor="middle" font-size="12.5" fill="#c9d3de">memory</text>
+  <!-- redis (planned) -->
+  <path d="M390,748 V788 A40,14 0 0 0 470,788 V748" fill="#10141b" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
+  <ellipse cx="430" cy="748" rx="40" ry="14" fill="#161c26" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
+  <text class="chip" x="430" y="812" text-anchor="middle" font-size="12.5" fill="#6e7681">redis</text>
+  <!-- disk (planned) -->
+  <path d="M520,748 V788 A40,14 0 0 0 600,788 V748" fill="#10141b" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
+  <ellipse cx="560" cy="748" rx="40" ry="14" fill="#161c26" stroke="#2b3442" stroke-width="1" stroke-dasharray="4 3"/>
+  <text class="chip" x="560" y="812" text-anchor="middle" font-size="12.5" fill="#6e7681">disk</text>
+  <text class="an" x="430" y="830" text-anchor="middle" font-size="10.5" fill="#5b636d">redis · disk — planned</text>
+
+  <!-- ===================== Right-side notes ===================== -->
   <g>
-    <!-- leaders -->
-    <path d="M610,190 L662,178" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
-    <path d="M610,425 L662,372" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
-    <path d="M610,660 L662,648" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
+    <path d="M680,190 L724,180" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
+    <path d="M680,430 L724,352" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
+    <path d="M680,640 L724,522" stroke="#3b4656" stroke-width="1.1" stroke-dasharray="3 3" fill="none"/>
 
-    <!-- frameworks note -->
-    <text class="lbl" x="670" y="174" font-size="13.5" fill="#c9d3de">Your existing agent stack</text>
-    <text class="an"  x="670" y="193" font-size="12" fill="#8b97a5">swap the checkpointer — one line</text>
+    <text class="lbl" x="730" y="176" font-size="13.5" fill="#c9d3de">Your existing agent stack</text>
+    <text class="an"  x="730" y="195" font-size="11.5" fill="#8b97a5">swap the checkpointer — one line</text>
 
-    <!-- integration block -->
-    <text class="lbl"  x="670" y="330" font-size="15" fill="#58a6ff">Drop-in integration</text>
-    <text class="mono" x="670" y="352" font-size="12" fill="#c9d3de">SwarmStateSaver → BaseCheckpointSaver</text>
-    <text class="mono" x="670" y="371" font-size="11.5" fill="#8b97a5">put · put_writes · get_tuple · list</text>
-    <text class="mono" x="670" y="393" font-size="12" fill="#c9d3de">Store.set / get / snapshot / restore</text>
-    <text class="mono" x="670" y="412" font-size="12" fill="#c9d3de">HandoffGraph.route(state)</text>
-    <text class="an"   x="670" y="434" font-size="12" fill="#8b97a5">framework-agnostic · fully typed (py.typed)</text>
+    <text class="lbl"  x="730" y="348" font-size="15" fill="#58a6ff">Drop-in integration</text>
+    <text class="mono" x="730" y="370" font-size="12" fill="#c9d3de">SwarmStateSaver → BaseCheckpointSaver</text>
+    <text class="mono" x="730" y="389" font-size="11" fill="#8b97a5">put · put_writes · get_tuple · list</text>
+    <text class="mono" x="730" y="411" font-size="12" fill="#c9d3de">Store.set / get / snapshot / restore</text>
+    <text class="mono" x="730" y="430" font-size="12" fill="#c9d3de">HandoffGraph.route(state)</text>
 
-    <!-- rust core note -->
-    <text class="lbl" x="670" y="604" font-size="13.5" fill="#c9d3de">Rust core · PyO3</text>
-    <text class="an"  x="670" y="623" font-size="12" fill="#8b97a5">GIL released on hot paths</text>
-    <text class="an"  x="670" y="642" font-size="12" fill="#8b97a5">O(1) persistent snapshots · incremental diffs</text>
-    <text class="an"  x="670" y="661" font-size="12" fill="#8b97a5">stable msgpack format (cross-language)</text>
-    <text class="an"  x="670" y="680" font-size="12" fill="#8b97a5">backends: memory · redis · disk</text>
-    <text class="an"  x="670" y="699" font-size="12" fill="#8b97a5">cp39-abi3 wheels · Python 3.9+ · no compiler</text>
+    <text class="lbl" x="730" y="518" font-size="13.5" fill="#c9d3de">Rust core · PyO3</text>
+    <text class="an"  x="730" y="537" font-size="12" fill="#8b97a5">GIL released on hot paths</text>
+    <text class="an"  x="730" y="556" font-size="12" fill="#8b97a5">O(1) snapshots · incremental diffs</text>
+    <text class="an"  x="730" y="575" font-size="12" fill="#8b97a5">stable msgpack format (cross-language)</text>
+    <text class="an"  x="730" y="597" font-size="12" fill="#8b97a5">cp39-abi3 wheels · Python 3.9+ · no compiler</text>
   </g>
 </svg>

@@ -78,10 +78,9 @@ body {
 /* -------- Isometric stack illustration -------- */
 .ss-stack {
   display: block;
-  width: 100%;
-  max-width: 980px;
+  width: min(100%, 1040px);
   height: auto;
-  margin: 2.5rem auto 0.75rem;
+  margin: 1.5rem auto 0.75rem;
 }
 .ss-stack-cap {
   text-align: center;
