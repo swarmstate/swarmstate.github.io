@@ -79,9 +79,9 @@ body {
 .ss-stack {
   display: block;
   width: 100%;
-  max-width: 600px;
+  max-width: 980px;
   height: auto;
-  margin: 2.5rem auto 0.5rem;
+  margin: 2.5rem auto 0.75rem;
 }
 .ss-stack-cap {
   text-align: center;

@@ -18,7 +18,7 @@ Rust core, framework-agnostic, built for production.</p>
 [GitHub](https://github.com/swarmstate/swarmstate){ .md-button }
 </div>
 
-<img class="ss-stack" src="assets/stack.svg" alt="Isometric diagram of the agentic stack: orchestration frameworks (LangGraph, CrewAI, custom loops) on top, swarmstate as the state and checkpointing engine in the middle, and the Rust core with storage backends at the bottom." width="680" height="720" />
+<img class="ss-stack" src="assets/stack.svg" alt="Isometric diagram of the agentic stack: orchestration frameworks (LangGraph, CrewAI, custom loops) on top, swarmstate as the state and checkpointing engine in the middle, and the Rust core with storage backends at the bottom." width="1060" height="860" />
 
 <p class="ss-stack-cap">Where swarmstate sits: underneath your orchestration framework, as the fast state &amp; checkpointing engine.</p>
 
