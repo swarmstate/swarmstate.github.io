@@ -8,7 +8,7 @@ hide:
 
 # swarmstate
 
-<p class="ss-tag">Drop-in state backend for LangGraph, CrewAI &amp; custom agent loops —
+<p class="ss-tag">Drop-in state backend for LangGraph, CrewAI &amp; custom agent loops -
 Rust core, framework-agnostic, built for production.</p>
 
 <div class="ss-install" markdown="1">
@@ -43,7 +43,7 @@ diffs. The GIL is released on the hot paths.
 
 <div class="ss-card" markdown="1">
 ### Deterministic routing
-Rule-based "which agent is next" decisions resolved natively in Rust — no LLM
+Rule-based "which agent is next" decisions resolved natively in Rust - no LLM
 tokens spent on transitions you can express as rules.
 </div>
 

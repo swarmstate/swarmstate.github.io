@@ -2,11 +2,11 @@
 
 The default [`Store`](store.md) is in-memory: fast, but its state is gone when the
 process exits and can't be shared with other processes. When you need state to
-**survive restarts** or be **shared across workers/services**, use `RedisStore` — it has
+**survive restarts** or be **shared across workers/services**, use `RedisStore` - it has
 the *exact same interface* as `Store`, so it drops in anywhere a store is expected
 (including the [LangGraph checkpointer](langgraph.md)) with no other code changes.
 
-Values are serialized with **msgpack** — the same wire format as the Rust core — so
+Values are serialized with **msgpack** - the same wire format as the Rust core - so
 anything written here is readable by any msgpack consumer, in any language.
 
 ```bash
@@ -27,13 +27,13 @@ store.namespaces()                      # -> ["workflow"]
 ```
 
 It implements the full interface: `set`, `get`, `contains`, `delete`, `keys`,
-`namespaces`, `clear`, `len(store)`, plus `snapshot()` / `restore()` (copy-based, O(n) —
+`namespaces`, `clear`, `len(store)`, plus `snapshot()` / `restore()` (copy-based, O(n) -
 Redis persists rather than offering the Rust store's O(1) structural-sharing snapshots).
 
 ## Persistent LangGraph checkpoints
 
 Because `RedisStore` shares the store interface, it drops straight into
-[`SwarmStateSaver`](langgraph.md) — giving you **persistent** checkpoints that survive
+[`SwarmStateSaver`](langgraph.md) - giving you **persistent** checkpoints that survive
 process restarts and are shared across workers:
 
 ```python
@@ -50,7 +50,7 @@ graph = builder.compile(checkpointer=saver)
 - Each namespace is a Redis **hash** at `{prefix}:{namespace}` (default prefix
   `swarmstate`); fields are keys, values are msgpack bytes.
 - The msgpack encoding is standard, so a value written here decodes with any msgpack
-  library — the foundation of [cross-framework state portability](../tutorials/portability.md).
+  library - the foundation of [cross-framework state portability](../tutorials/portability.md).
 
 ## Parameters
 

@@ -2,14 +2,14 @@
 
 In LangGraph, a **checkpointer** is what persists a graph's state after every step, so a
 conversation (a *thread*) can be paused, resumed, inspected, or rewound. LangGraph ships
-`InMemorySaver` (fast but not persistent) and `SqliteSaver` (persistent but slower —
+`InMemorySaver` (fast but not persistent) and `SqliteSaver` (persistent but slower -
 every step commits to disk).
 
 `SwarmStateSaver` is a **drop-in replacement** for either: same
 `BaseCheckpointSaver` interface (`put`, `put_writes`, `get_tuple`, `list`, plus the async
 variants), but backed by a swarmstate [`Store`](store.md) with a Rust core. You get
-faster checkpoints than SQLite (see the [benchmarks](../benchmarks.md)), and — because the
-state lives in a `Store` — the ability to snapshot or roll back **every thread at once**.
+faster checkpoints than SQLite (see the [benchmarks](../benchmarks.md)), and - because the
+state lives in a `Store` - the ability to snapshot or roll back **every thread at once**.
 Point it at a [`RedisStore`](redis.md) and those checkpoints become persistent, too.
 
 ```bash
@@ -25,8 +25,8 @@ from swarmstate.integrations.langgraph import SwarmStateSaver
 graph = builder.compile(checkpointer=SwarmStateSaver())   # was SqliteSaver(...)
 ```
 
-Everything else — `invoke`, `stream`, `get_state`, `get_state_history`, resuming a
-thread — works unchanged.
+Everything else - `invoke`, `stream`, `get_state`, `get_state_history`, resuming a
+thread - works unchanged.
 
 ```python
 config = {"configurable": {"thread_id": "user-42"}}
@@ -51,7 +51,7 @@ saver_b = SwarmStateSaver(store)   # same underlying checkpoint DB
 ## Snapshot / roll back the whole checkpoint DB
 
 Because checkpoints live in a `Store`, you get cheap, atomic snapshots of **every
-thread at once** — useful for tests, "what-if" branches, or recovery:
+thread at once** - useful for tests, "what-if" branches, or recovery:
 
 ```python
 saver = SwarmStateSaver()

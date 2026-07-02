@@ -3,14 +3,14 @@
 The `Store` is where swarmstate keeps state. Think of it as a fast, in-memory
 dictionary with two differences that matter for agent systems:
 
-1. **Keys have two parts** — a *namespace* and a *key* — so you can group related state
+1. **Keys have two parts** - a *namespace* and a *key* - so you can group related state
    (one namespace per workflow, agent, or thread) instead of inventing string prefixes.
 2. **Values are stored as [msgpack](https://msgpack.org) bytes**, a compact binary format
    that any language can read. That's what makes state portable across frameworks and
    what lets snapshots and checkpoints be cheap.
 
-Everything else in swarmstate — snapshots, the LangGraph checkpointer, the Redis
-backend — is built on top of the `Store`.
+Everything else in swarmstate - snapshots, the LangGraph checkpointer, the Redis
+backend - is built on top of the `Store`.
 
 ```python
 import swarmstate as ss
@@ -26,7 +26,7 @@ store.get("workflow", "onboarding")          # -> {"step": 3, "data": {"user": 4
 
 ## Creating a store
 
-`Store()` with no arguments is an in-memory store using the msgpack codec — the right
+`Store()` with no arguments is an in-memory store using the msgpack codec - the right
 choice for most cases.
 
 ```python
@@ -43,7 +43,7 @@ store = ss.Store(max_history=100)            # keep at most 100 snapshots
 ## Reading and writing
 
 The four everyday operations. Note that `get` returns `None` (or your `default`) for a
-missing key rather than raising — handy for "read state if it exists" flows.
+missing key rather than raising - handy for "read state if it exists" flows.
 
 ```python
 store.set("agents", "researcher", {"status": "running", "tokens": 1200})
@@ -71,7 +71,7 @@ Values go through the msgpack codec, which supports the JSON-like types plus `by
 `tuple`:
 
 > `None`, `bool`, `int` (64-bit), `float`, `str`, `bytes`, `list`, `tuple` (comes back as
-> a `list`), and `dict` — nested arbitrarily.
+> a `list`), and `dict` - nested arbitrarily.
 
 ```python
 store.set("bin", "blob", b"\x00\x01\xff")    # bytes are preserved byte-for-byte
@@ -79,13 +79,13 @@ store.get("bin", "blob")                     # -> b"\x00\x01\xff"
 ```
 
 Anything else (a custom object, a set, a NumPy array) raises `TypeError`, and integers
-beyond the 64-bit range raise `ValueError` — so serialization problems surface
+beyond the 64-bit range raise `ValueError` - so serialization problems surface
 immediately at `set()` time, not later.
 
 ## Why it's safe to share across threads
 
 Agent systems are often concurrent (parallel tool calls, worker pools). The `Store` is
-thread-safe, and — because the hot work happens in Rust with the **GIL released** — many
+thread-safe, and - because the hot work happens in Rust with the **GIL released** - many
 Python threads can read and write the *same* store genuinely in parallel, instead of
 queuing behind the interpreter lock:
 
@@ -109,6 +109,6 @@ len(store)   # -> 8000, with no locking on your side
 
 ## Where to go next
 
-- [Snapshots & diffs](snapshots.md) — capture and roll back state cheaply.
-- [Redis backend](redis.md) — the same API, but persistent and shared across processes.
-- [LangGraph checkpointer](langgraph.md) — let LangGraph store its checkpoints here.
+- [Snapshots & diffs](snapshots.md) - capture and roll back state cheaply.
+- [Redis backend](redis.md) - the same API, but persistent and shared across processes.
+- [LangGraph checkpointer](langgraph.md) - let LangGraph store its checkpoints here.

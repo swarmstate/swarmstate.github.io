@@ -1,6 +1,6 @@
 # Benchmarks
 
-Every number here is **reproducible** — run
+Every number here is **reproducible** - run
 [`benchmarks/run.py`](https://github.com/swarmstate/swarmstate/blob/main/benchmarks/run.py)
 yourself:
 
@@ -31,7 +31,7 @@ Per-operation latency through LangGraph's `BaseCheckpointSaver` interface:
 | InMemorySaver | 4.0 µs | 8.5 µs | ~203k ops/s | 81.8 µs |
 | SqliteSaver (file) | 74.0 µs | 323 µs | ~9.5k ops/s | 14.5 µs |
 
-- **`put` is ~12.8× faster than `SqliteSaver`** — no per-step disk commit.
+- **`put` is ~12.8× faster than `SqliteSaver`** - no per-step disk commit.
 - **`get_tuple` (latest) is ~11× faster than `InMemorySaver`**: swarmstate keeps an O(1)
   "latest checkpoint" pointer, where the reference saver scans keys.
 
@@ -58,8 +58,8 @@ practically free.
 | --- | --- |
 | Machine | Apple Silicon (macOS, arm64) |
 | Python | 3.14 |
-| swarmstate | 0.2.1 (release wheel) |
+| swarmstate | 0.4.0 (release wheel) |
 | langgraph | 1.2.x · langgraph-checkpoint 4.x |
 | iters / warmup | 4,000 / 400 · seed 7 |
 
-Numbers vary by hardware — regenerate on yours with the command above.
+Numbers vary by hardware - regenerate on yours with the command above.

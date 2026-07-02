@@ -17,7 +17,8 @@ Integrations use lazy imports and are pulled in via extras:
 ```bash
 pip install "swarmstate[langgraph]"   # LangGraph checkpointer adapter
 pip install "swarmstate[crewai]"      # CrewAI state/memory adapter
-pip install "swarmstate[redis]"       # optional Redis backend
+pip install "swarmstate[redis]"       # Redis backend (persistent, networked)
+pip install "swarmstate[disk]"        # SQLite disk backend (persistent, no server)
 pip install "swarmstate[all]"         # everything above
 
 # with uv

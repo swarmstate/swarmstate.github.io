@@ -1,4 +1,4 @@
-# Tutorial — Custom multi-agent loop
+# Tutorial - Custom multi-agent loop
 
 You don't need an orchestration framework to get deterministic routing and durable state.
 This tutorial builds a **support-ticket triage** system with just swarmstate: a
@@ -42,7 +42,7 @@ triage({"id": "T2", "category": "other",   "text": "error 500"})       # -> "tec
 triage({"id": "T3", "category": "other",   "text": "how to export?"})  # -> "human"
 ```
 
-The condition mini-language supports dotted paths, `and/or/not`, comparisons and `in` —
+The condition mini-language supports dotted paths, `and/or/not`, comparisons and `in` -
 see the [Handoff graph guide](../guide/handoff.md). It is parsed and evaluated in Rust,
 never with `eval`, so untrusted rules can't execute code.
 

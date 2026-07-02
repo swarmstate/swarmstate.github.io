@@ -1,6 +1,6 @@
 # API reference
 
-The public API is intentionally small — three classes and a helper. This page is the
+The public API is intentionally small - three classes and a helper. This page is the
 exact reference; for explanations and examples, see the [Guide](guide/index.md) and
 [Tutorials](tutorials/index.md).
 

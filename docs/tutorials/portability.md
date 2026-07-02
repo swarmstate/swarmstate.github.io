@@ -1,7 +1,7 @@
-# Tutorial — State portability across frameworks
+# Tutorial - State portability across frameworks
 
 The `Store` serializes to a **stable, language-neutral msgpack format**. State written by
-one system is readable by any other — no lock-in. This tutorial writes state from a
+one system is readable by any other - no lock-in. This tutorial writes state from a
 LangGraph app and reads it from a plain custom loop (and vice versa).
 
 ```bash
@@ -37,7 +37,7 @@ same store:
 store.set("orders", "order-42", {"status": "awaiting_payment", "total": 79.0})
 ```
 
-## 2. A different system reads it — no LangGraph needed
+## 2. A different system reads it - no LangGraph needed
 
 A separate service, a CrewAI crew, or a custom loop opens the same store (or the same
 backend) and reads the state directly:
@@ -51,7 +51,7 @@ order = store.get("orders", "order-42")
 ```
 
 Because the format is msgpack (not a Python pickle or a framework-specific blob), the
-same bytes are readable from **any language** — not just Python.
+same bytes are readable from **any language** - not just Python.
 
 ## 3. Migrate between frameworks without losing state
 
@@ -69,7 +69,7 @@ assert wf["step"] == 3
 
 ## 4. Audit and diff what changed
 
-Snapshots make it trivial to see what a run changed — useful for debugging cross-system
+Snapshots make it trivial to see what a run changed - useful for debugging cross-system
 workflows:
 
 ```python
@@ -84,7 +84,7 @@ after.diff(before)
 
 ## Recap
 
-- One `Store`, many frameworks — **no state lock-in**.
+- One `Store`, many frameworks - **no state lock-in**.
 - The msgpack format is stable and **cross-language**.
 - `snapshot().diff()` gives you an audit trail of exactly what changed.
 

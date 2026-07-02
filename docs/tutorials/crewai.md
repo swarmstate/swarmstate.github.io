@@ -1,6 +1,6 @@
-# Tutorial — CrewAI: shared, persistent memory
+# Tutorial - CrewAI: shared, persistent memory
 
-`SwarmStateStorage` implements CrewAI's storage protocol — `save`, `search`, `reset` —
+`SwarmStateStorage` implements CrewAI's storage protocol - `save`, `search`, `reset` -
 backed by a swarmstate [`Store`](../guide/store.md). Your crew's memory becomes
 **durable, snapshot-able and portable**: the same store can hold your LangGraph
 checkpoints and be read by other systems.
@@ -12,7 +12,7 @@ pip install swarmstate crewai
 
 !!! note "How it's built"
     `SwarmStateStorage` **implements the protocol** rather than importing CrewAI, so it
-    is independent of any CrewAI version — you wire it into your crew wherever CrewAI
+    is independent of any CrewAI version - you wire it into your crew wherever CrewAI
     accepts a storage object. Search is **lexical** (token-overlap), deterministic and
     dependency-free; for embedding-based semantic recall, use CrewAI's RAG storage.
 
@@ -26,7 +26,7 @@ store = ss.Store()                                   # in-memory
 storage = SwarmStateStorage(store, namespace="crew:research")
 ```
 
-For **persistence across runs/processes**, back it with Redis — same one line:
+For **persistence across runs/processes**, back it with Redis - same one line:
 
 ```python
 from swarmstate.backends.redis import RedisStore
@@ -63,7 +63,7 @@ from crewai import Agent, Task, Crew          # your normal setup
 
 ## Portability: one store, many agents
 
-Because the memory lives in a `Store`, anything else can read it — a LangGraph app, a
+Because the memory lives in a `Store`, anything else can read it - a LangGraph app, a
 dashboard, another language:
 
 ```python

@@ -1,4 +1,4 @@
-# Tutorial — LangGraph: resumable agents
+# Tutorial - LangGraph: resumable agents
 
 Build a persistent, resumable LangGraph agent whose checkpoints live in a swarmstate
 `Store`, then time-travel across **all** threads with a single store snapshot.
@@ -10,7 +10,7 @@ pip install "swarmstate[langgraph]"
 
 ## 1. A minimal graph with a checkpointer
 
-We use a tiny deterministic node so the tutorial runs with no API keys — in your app,
+We use a tiny deterministic node so the tutorial runs with no API keys - in your app,
 replace `respond` with your real LLM/tool node.
 
 ```python
@@ -40,7 +40,7 @@ saver = SwarmStateSaver()                       # <- was SqliteSaver(...)
 graph = builder.compile(checkpointer=saver)
 ```
 
-## 2. Converse on a thread — state persists
+## 2. Converse on a thread - state persists
 
 The `thread_id` identifies a conversation; each `invoke` resumes from the last checkpoint.
 
@@ -64,7 +64,7 @@ graph.get_state({"configurable": {"thread_id": "bob"}}).values["turns"]   # -> 1
 
 ## 3. Inspect history
 
-`get_state_history` streams every checkpoint on the thread (newest first) — this is
+`get_state_history` streams every checkpoint on the thread (newest first) - this is
 LangGraph's `list()` under the hood:
 
 ```python
@@ -75,7 +75,7 @@ for snap in graph.get_state_history(cfg):
 ## 4. Time-travel the *whole* checkpoint DB
 
 Because checkpoints live in a `Store`, you can snapshot **every thread at once** in O(1)
-and roll back — great for tests, "what-if" branches, or recovery:
+and roll back - great for tests, "what-if" branches, or recovery:
 
 ```python
 snap = saver.store.snapshot()          # freeze all threads
@@ -103,7 +103,7 @@ graph_b = builder.compile(checkpointer=SwarmStateSaver(store))
 
 ## Async
 
-`ainvoke` / `astream` work out of the box — the saver implements `aput`, `aget_tuple`,
+`ainvoke` / `astream` work out of the box - the saver implements `aput`, `aget_tuple`,
 `alist`, and `aput_writes`.
 
 ## Recap
