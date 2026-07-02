@@ -79,7 +79,7 @@ body {
 .ss-stack {
   display: block;
   width: 100%;
-  max-width: 560px;
+  max-width: 600px;
   height: auto;
   margin: 2.5rem auto 0.5rem;
 }
