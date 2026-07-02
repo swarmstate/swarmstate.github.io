@@ -58,7 +58,7 @@ makes its state layer fast and portable.
 </div>
 </div>
 
-!!! note "Honest benchmarks"
+!!! note "Benchmarks"
     On the LangGraph interface, `SwarmStateSaver.put` is **~12.8× faster than
     `SqliteSaver`**, and `Store.snapshot()` is **O(1)** (hundreds of thousands of times
     faster than deep-copying a large state). Full methodology, tables and charts —
