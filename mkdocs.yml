@@ -1,6 +1,6 @@
 site_name: swarmstate
 site_description: >-
-  Drop-in state backend for LangGraph, CrewAI & custom agent loops —
+  Drop-in state backend for LangGraph, CrewAI & custom agent loops -
   Rust core, framework-agnostic, built for production.
 site_url: https://swarmstate.github.io/
 repo_url: https://github.com/swarmstate/swarmstate
@@ -59,10 +59,10 @@ nav:
       - Disk backend: guide/disk.md
   - Tutorials:
       - Overview: tutorials/index.md
-      - LangGraph — resumable agents: tutorials/langgraph.md
+      - LangGraph - resumable agents: tutorials/langgraph.md
       - Custom multi-agent loop: tutorials/custom-loop.md
       - State portability: tutorials/portability.md
-      - CrewAI — shared memory: tutorials/crewai.md
+      - CrewAI - shared memory: tutorials/crewai.md
   - Benchmarks: benchmarks.md
   - Reference:
       - API: api.md
