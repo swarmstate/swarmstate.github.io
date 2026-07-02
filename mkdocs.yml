@@ -9,6 +9,7 @@ edit_uri: ""
 
 theme:
   name: material
+  custom_dir: overrides
   # System fonts to match the landing's look-and-feel.
   font: false
   palette:
@@ -20,8 +21,6 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
-    - navigation.tabs
-    - navigation.tabs.sticky
     - navigation.top
     - navigation.sections
     - content.code.copy
