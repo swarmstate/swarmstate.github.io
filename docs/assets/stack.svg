@@ -48,7 +48,7 @@
   <text class="conn" x="444" y="324" font-size="12" fill="#8b97a5">reads / writes state</text>
 
   <!-- ===================== Layer 2 · swarmstate (highlight) ===================== -->
-  <text class="lbl" x="430" y="356" text-anchor="middle" font-size="26" fill="#e6edf3">swarmstate</text>
+  <text class="lbl" x="345" y="356" text-anchor="middle" font-size="26" fill="#e6edf3">swarmstate</text>
   <g filter="url(#glow)">
     <polygon points="180,430 430,494 430,510 180,446" fill="#0f2a45"/>
     <polygon points="430,494 680,430 680,446 430,510" fill="#0a1d31"/>
@@ -76,7 +76,7 @@
   <text class="conn" x="444" y="537" font-size="12" fill="#8b97a5">fast serialization</text>
 
   <!-- ===================== Layer 3 · Rust core ===================== -->
-  <text class="lbl" x="430" y="566" text-anchor="middle" font-size="18" fill="#c9d3de">Rust core · PyO3</text>
+  <text class="lbl" x="350" y="566" text-anchor="middle" font-size="18" fill="#c9d3de">Rust core · PyO3</text>
   <polygon points="180,640 430,704 430,720 180,656" fill="#141922"/>
   <polygon points="430,704 680,640 680,656 430,720" fill="#0d1117"/>
   <polygon points="430,576 680,640 430,704 180,640" fill="#1c212b" stroke="#2f3a4a" stroke-width="0.75"/>
