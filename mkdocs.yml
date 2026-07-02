@@ -20,6 +20,8 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - navigation.sections
     - content.code.copy
@@ -45,9 +47,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Why swarmstate: why.md
-  - Installation: installation.md
+  - Why: why.md
   - Guide:
+      - Installation: installation.md
       - The Store: guide/store.md
       - Snapshots & diffs: guide/snapshots.md
       - Handoff graph: guide/handoff.md
@@ -60,9 +62,10 @@ nav:
       - State portability: tutorials/portability.md
       - CrewAI — shared memory: tutorials/crewai.md
   - Benchmarks: benchmarks.md
-  - API reference: api.md
-  - Architecture: architecture.md
-  - Roadmap: roadmap.md
+  - Reference:
+      - API: api.md
+      - Architecture: architecture.md
+      - Roadmap: roadmap.md
 
 extra:
   social:

@@ -27,10 +27,47 @@
 }
 
 /* Keep the header flush with the page background (landing had no chrome). */
-.md-header,
-.md-tabs {
+.md-header {
   background-color: var(--ss-bg);
   box-shadow: 0 0 0.4rem rgba(0, 0, 0, 0.4);
+}
+
+/* -------- Top navigation menu (langchain.com-style) -------- */
+.md-tabs {
+  background-color: var(--ss-bg);
+  border-bottom: 1px solid var(--ss-border);
+  box-shadow: none;
+}
+.md-tabs__link {
+  opacity: 1;
+  color: var(--ss-muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+  transition: color 0.15s ease;
+}
+.md-tabs__link:hover,
+.md-tabs__link:focus {
+  color: var(--ss-fg);
+}
+/* Accent underline on the active section. */
+.md-tabs__item {
+  position: relative;
+}
+.md-tabs__item--active .md-tabs__link {
+  color: var(--ss-fg);
+}
+.md-tabs__item--active::after {
+  content: "";
+  position: absolute;
+  left: 0.8rem;
+  right: 0.8rem;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ss-accent);
+  border-radius: 2px;
 }
 
 body {
