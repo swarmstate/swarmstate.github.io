@@ -1,11 +1,26 @@
 # Snapshots & diffs
 
-A **snapshot** is an immutable, point-in-time view of a `Store`. Snapshots are cheap:
-the store is backed by a persistent data structure, so taking a snapshot is an **O(1)**
-operation that shares structure with the live store (copy-on-write). Later mutations to
-the store never affect an existing snapshot.
+A **snapshot** is a frozen, read-only copy of the entire store at a moment in time. You
+take one, keep working, and can later either compare against it or roll the whole store
+back to it — like a savepoint for your agent's state.
 
-## Taking and restoring
+What makes this practical is that snapshots are **cheap**. The store is built on a
+*persistent data structure*, so taking a snapshot doesn't copy the data — it shares it,
+and the store only copies the small pieces that later change (copy-on-write). Taking a
+snapshot is **O(1)**: it costs the same whether the store holds ten entries or a million.
+(See the [benchmarks](../benchmarks.md) — snapshotting stays flat while a `deepcopy`
+grows linearly.)
+
+Because a snapshot is frozen, later writes to the store never change it.
+
+## When you'd use one
+
+- **Undo / rollback** — try something, and revert if it goes wrong.
+- **Time-travel & "what-if"** — branch from a known state, explore, discard.
+- **Testing** — snapshot a fixture, run a case, restore, repeat.
+- **Auditing** — `diff` two snapshots to see exactly what changed.
+
+## Take a snapshot and roll back
 
 ```python
 import swarmstate as ss
@@ -13,41 +28,45 @@ import swarmstate as ss
 store = ss.Store()
 store.set("workflow", "onboarding", {"step": 3})
 
-snap = store.snapshot()          # capture
+snap = store.snapshot()                # savepoint
 
 store.set("workflow", "onboarding", {"step": 4})
-store.get("workflow", "onboarding")   # -> {"step": 4}
+store.get("workflow", "onboarding")    # -> {"step": 4}
 
-store.restore(snap)              # roll back
-store.get("workflow", "onboarding")   # -> {"step": 3}
+store.restore(snap)                    # go back to the savepoint
+store.get("workflow", "onboarding")    # -> {"step": 3}
 ```
 
-## Snapshot metadata
+`restore` replaces the whole store with the snapshot's contents — every namespace and
+key, not just one.
+
+## What a snapshot knows about itself
 
 ```python
 snap = store.snapshot()
 
-snap.id          # monotonic id assigned by the store
-snap.timestamp   # seconds since the Unix epoch
-snap.parent      # id of the previous snapshot (or None), for incremental chains
-snap.size_bytes  # total serialized size of all values
-snap.keys        # list of (namespace, key) pairs present
+snap.id          # a monotonic id from the store
+snap.timestamp   # when it was taken (seconds since the Unix epoch)
+snap.parent      # id of the previous snapshot, or None — snapshots form a chain
+snap.size_bytes  # total serialized size of all values at that moment
+snap.keys        # the (namespace, key) pairs it contains
 ```
 
-## Incremental diffs
+## See what changed between two snapshots
 
-`Snapshot.diff(base)` reports how to go from `base` to the snapshot it is called on:
+`later.diff(base)` answers "what happened to get from `base` to `later`?" — as three
+lists of `(namespace, key)` pairs:
 
 ```python
 base = store.snapshot()
 
 store.set("n", "added_key", 1)
-store.set("n", "changed_key", 999)   # assume it existed in base
-store.delete("n", "removed_key")     # assume it existed in base
+store.set("n", "changed_key", 999)     # existed in base with a different value
+store.delete("n", "removed_key")       # existed in base
 
-now = store.snapshot()
+later = store.snapshot()
 
-now.diff(base)
+later.diff(base)
 # {
 #   "added":   [("n", "added_key")],
 #   "removed": [("n", "removed_key")],
@@ -55,5 +74,11 @@ now.diff(base)
 # }
 ```
 
-This makes it cheap to persist only what changed between two checkpoints — the
-foundation for the incremental checkpointing used by the LangGraph adapter (M3).
+Diffing is how you persist or transmit **only what changed** between two checkpoints
+instead of the whole state — the basis for efficient incremental checkpointing.
+
+## Next
+
+- [Handoff graph](handoff.md) — deterministic routing between agents.
+- [LangGraph checkpointer](langgraph.md) — snapshots power whole-DB time-travel across
+  every conversation thread at once.

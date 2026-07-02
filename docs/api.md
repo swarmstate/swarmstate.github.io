@@ -1,8 +1,13 @@
 # API reference
 
-The public API is intentionally small. All classes are implemented in Rust and exposed
-through the native `swarmstate._core` module; full type stubs ship with the package
-(`py.typed`).
+The public API is intentionally small — three classes and a helper. This page is the
+exact reference; for explanations and examples, see the [Guide](guide/index.md) and
+[Tutorials](tutorials/index.md).
+
+The core classes are implemented in Rust and exposed through the native
+`swarmstate._core` module; full type stubs ship with the package (`py.typed`), so editors
+give you autocomplete and type checks. Adapters (`SwarmStateSaver`, `SwarmStateStorage`)
+and the `RedisStore` backend live in `swarmstate.integrations.*` / `swarmstate.backends.*`.
 
 ## `swarmstate.Store`
 

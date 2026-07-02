@@ -1,9 +1,16 @@
 # LangGraph checkpointer
 
-`SwarmStateSaver` is a **drop-in replacement** for LangGraph's built-in checkpointers
-(`SqliteSaver`, `InMemorySaver`, …). It implements the full `BaseCheckpointSaver`
-interface — `put`, `put_writes`, `get_tuple`, `list` and their async variants — backed
-by a swarmstate [`Store`](store.md) (Rust core).
+In LangGraph, a **checkpointer** is what persists a graph's state after every step, so a
+conversation (a *thread*) can be paused, resumed, inspected, or rewound. LangGraph ships
+`InMemorySaver` (fast but not persistent) and `SqliteSaver` (persistent but slower —
+every step commits to disk).
+
+`SwarmStateSaver` is a **drop-in replacement** for either: same
+`BaseCheckpointSaver` interface (`put`, `put_writes`, `get_tuple`, `list`, plus the async
+variants), but backed by a swarmstate [`Store`](store.md) with a Rust core. You get
+faster checkpoints than SQLite (see the [benchmarks](../benchmarks.md)), and — because the
+state lives in a `Store` — the ability to snapshot or roll back **every thread at once**.
+Point it at a [`RedisStore`](redis.md) and those checkpoints become persistent, too.
 
 ```bash
 pip install "swarmstate[langgraph]"

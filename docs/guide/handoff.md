@@ -1,8 +1,18 @@
 # Handoff graph
 
-`HandoffGraph` resolves **deterministic, rule-based transitions** between agents/nodes
-— the "which agent is next" decisions that don't need an LLM. Edges carry an optional
-condition, and `route()` returns the first matching edge, resolved natively in Rust.
+In a multi-agent system, *something* has to decide which agent or step runs next. Often
+that decision is a simple rule — "billing tickets go to the billing agent" — but it's
+easy to end up paying an LLM call to make it. `HandoffGraph` lets you express those rules
+as a graph and resolve them **deterministically, in microseconds, with zero tokens**.
+
+You describe the graph as **nodes** connected by **edges**, where each edge may carry a
+`when` condition. `route(node, state)` looks at the outgoing edges of `node`, in the
+order you added them, and returns the target of the **first** edge whose condition is
+true (an edge with no condition always matches, so it acts as a default). It's all
+evaluated in Rust — no `eval`, no network, no model.
+
+Reach for it whenever the "next step" is a function of known state rather than a
+judgement call; keep using the LLM for the genuinely open-ended decisions.
 
 ```python
 import swarmstate as ss
