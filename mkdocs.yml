@@ -50,6 +50,7 @@ nav:
       - The Store: guide/store.md
       - Snapshots & diffs: guide/snapshots.md
       - Handoff graph: guide/handoff.md
+      - LangGraph checkpointer: guide/langgraph.md
   - API reference: api.md
   - Architecture: architecture.md
   - Roadmap: roadmap.md

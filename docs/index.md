@@ -48,20 +48,16 @@ tokens spent on transitions you can express as rules.
 
 ---
 
-`swarmstate` is **not** an orchestration framework and does not compete with LangGraph,
-CrewAI or AutoGen. It is the fast engine that sits **underneath** them — the same way a
-fast columnar engine sits underneath data workloads.
+`swarmstate` does not compete with visible agent frameworks; it acts as low-level
+infrastructure, much like engines such as DuckDB, ClickHouse, Arrow, or Polars can sit
+underneath data applications without replacing them.
+
+Swap your LangGraph checkpointer for a Rust-backed one — **one line, no other change**:
 
 ```python
-import swarmstate as ss
+from swarmstate.integrations.langgraph import SwarmStateSaver
 
-store = ss.Store()                               # in-memory, msgpack codec
-store.set("workflow", "onboarding", {"step": 3})
-snap = store.snapshot()                          # cheap, immutable snapshot
-
-store.set("workflow", "onboarding", {"step": 4})
-store.restore(snap)                              # rollback
-store.get("workflow", "onboarding")              # -> {"step": 3}
+graph = builder.compile(checkpointer=SwarmStateSaver())   # replaces SqliteSaver
 ```
 
 See the [Guide](guide/store.md) to get started, or the [API reference](api.md) for the
