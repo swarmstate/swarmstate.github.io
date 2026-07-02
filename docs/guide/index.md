@@ -58,6 +58,6 @@ processes.
 
 ## New here?
 
-1. [Install](installation.md) it (`pip install swarmstate` / `uv add swarmstate`).
+1. [Install](../installation.md) it (`pip install swarmstate` / `uv add swarmstate`).
 2. Start with [The Store](store.md) — the core you'll use everywhere.
 3. Then follow a [tutorial](../tutorials/index.md) end-to-end.
