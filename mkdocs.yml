@@ -52,6 +52,7 @@ nav:
       - Snapshots & diffs: guide/snapshots.md
       - Handoff graph: guide/handoff.md
       - LangGraph checkpointer: guide/langgraph.md
+      - Redis backend: guide/redis.md
   - Tutorials:
       - Overview: tutorials/index.md
       - LangGraph — resumable agents: tutorials/langgraph.md

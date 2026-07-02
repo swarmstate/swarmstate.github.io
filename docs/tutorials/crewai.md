@@ -1,95 +1,74 @@
 # Tutorial — CrewAI: shared, persistent memory
 
-!!! info "First-class adapter is coming in M5"
-    A dedicated CrewAI adapter (mirroring the [LangGraph one](langgraph.md)) lands in
-    **M5** — see the [Roadmap](../roadmap.md). Until then, this tutorial shows the pattern
-    that works **today**: use a swarmstate [`Store`](../guide/store.md) as durable,
-    shareable state around your crew, using only the stable public `Store` API.
+`SwarmStateStorage` implements CrewAI's storage protocol — `save`, `search`, `reset` —
+backed by a swarmstate [`Store`](../guide/store.md). Your crew's memory becomes
+**durable, snapshot-able and portable**: the same store can hold your LangGraph
+checkpoints and be read by other systems.
 
 ```bash
 pip install swarmstate crewai
 ```
 
-## The idea
+!!! note "How it's built"
+    `SwarmStateStorage` **implements the protocol** rather than importing CrewAI, so it
+    is independent of any CrewAI version — you wire it into your crew wherever CrewAI
+    accepts a storage object. Search is **lexical** (token-overlap), deterministic and
+    dependency-free; for embedding-based semantic recall, use CrewAI's RAG storage.
 
-CrewAI coordinates agents and tasks; swarmstate gives that crew **persistent,
-snapshot-able, framework-agnostic state** that survives process restarts and can be read
-by other systems. You wrap task execution with a couple of `Store` calls.
-
-## 1. A store keyed by run
+## Create the storage
 
 ```python
 import swarmstate as ss
+from swarmstate.integrations.crewai import SwarmStateStorage
 
-store = ss.Store()          # or share one across many crews
-
-RUN = "research-2026-07-02"
+store = ss.Store()                                   # in-memory
+storage = SwarmStateStorage(store, namespace="crew:research")
 ```
 
-## 2. Persist each task's output
-
-Whatever a CrewAI task returns, record it in the store under the run. This is plain
-`Store.set` — nothing CrewAI-specific:
+For **persistence across runs/processes**, back it with Redis — same one line:
 
 ```python
-def remember(task_name: str, output) -> None:
-    store.set(RUN, task_name, {"output": str(output), "done": True})
+from swarmstate.backends.redis import RedisStore
 
-def recall(task_name: str):
-    return store.get(RUN, task_name)
+storage = SwarmStateStorage(RedisStore("redis://localhost:6379/0"), namespace="crew:research")
 ```
 
-Wire these into your crew — e.g. in a task callback or right after `crew.kickoff()`:
+## Save and recall memory
 
 ```python
-from crewai import Agent, Task, Crew          # your normal CrewAI setup
+storage.save("The Q2 churn rate was 4.1%", {"agent": "analyst"})
+storage.save("Top objection in calls: pricing", {"agent": "sales"})
 
-# ... define agents and tasks as usual ...
+storage.search("churn rate", limit=3)
+# [{"context": "The Q2 churn rate was 4.1%", "metadata": {"agent": "analyst"}, "score": 1.0}]
+
+storage.reset()          # clear this namespace
+```
+
+`search` returns `{"context", "metadata", "score"}` entries, ranked by token overlap
+then recency.
+
+## Wire it into a crew
+
+Pass the storage where your CrewAI setup accepts a memory/storage object (e.g. an
+external-memory slot), then run the crew as usual:
+
+```python
+from crewai import Agent, Task, Crew          # your normal setup
+
+# ... define agents & tasks, attach `storage` to the crew's memory ...
 # result = crew.kickoff()
-# remember("final_report", result)
 ```
 
-Now `recall("final_report")` returns the output on the next run, even in a fresh process,
-and **any other system** (a LangGraph app, a dashboard, another language) can read the
-same keys — see [state portability](portability.md).
+## Portability: one store, many agents
 
-## 3. Resume: skip tasks already completed
-
-Because state is durable, you can make a crew **idempotent** — skip work that's already
-done:
+Because the memory lives in a `Store`, anything else can read it — a LangGraph app, a
+dashboard, another language:
 
 ```python
-def run_task(task_name, fn):
-    cached = recall(task_name)
-    if cached and cached["done"]:
-        return cached["output"]          # resume: reuse prior result
-    output = fn()                        # run the CrewAI task
-    remember(task_name, output)
-    return output
+key = store.keys("crew:research")[0]
+store.get("crew:research", key)   # {"value": "...", "metadata": {...}}
 ```
 
-## 4. Snapshot a crew run for "what-if" branches
-
-```python
-checkpoint = store.snapshot()
-# ... let the crew explore one strategy ...
-store.restore(checkpoint)               # discard it, try another
-```
-
-## 5. Deterministic hand-offs between agents (optional)
-
-For rule-based "which agent next" decisions inside a crew, drop in a
-[`HandoffGraph`](../guide/handoff.md) instead of spending tokens on the choice:
-
-```python
-router = ss.HandoffGraph()
-router.add_edge("researcher", "writer",   when="findings_ready == true")
-router.add_edge("researcher", "reviewer", when="needs_review == true")
-next_agent = router.route("researcher", {"findings_ready": True})   # -> "writer"
-```
-
-## Recap
-
-- Today: use `Store` as durable, portable memory + `HandoffGraph` for routing around any
-  CrewAI crew — pure public API, nothing to invent.
-- Soon (**M5**): a first-class CrewAI adapter so this is wired in automatically.
+See [state portability](portability.md) for the full anti-lock-in story, and the
+[Redis backend](../guide/redis.md) to make it persistent.

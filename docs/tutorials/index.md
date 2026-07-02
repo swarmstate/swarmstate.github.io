@@ -25,8 +25,8 @@ stable msgpack format.
 
 <div class="ss-card" markdown="1">
 ### [CrewAI: shared, persistent memory](crewai.md)
-Use a swarmstate `Store` as durable, shareable memory for a CrewAI crew today (the
-first-class adapter lands in M5).
+Back a CrewAI crew's memory with `SwarmStateStorage` — durable, shareable and portable,
+optionally persisted to Redis.
 </div>
 
 </div>

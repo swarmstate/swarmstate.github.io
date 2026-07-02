@@ -9,7 +9,7 @@
 | **M2** | `HandoffGraph` — conditional DAG, safe condition evaluator (no `eval`), deterministic `route()`, cycle detection | ✅ done |
 | **M3** | LangGraph adapter — `SwarmStateSaver` implementing `BaseCheckpointSaver` (drop-in for `SqliteSaver`) | ✅ done |
 | **M4** | Benchmarks — checkpoint latency (p50/p99) and throughput vs `SqliteSaver` and in-memory dict | ✅ done |
-| **M5** | CrewAI adapter + optional Redis backend (state portability across frameworks) | ⏳ next |
+| **M5** | CrewAI adapter + optional Redis backend (state portability across frameworks) | ✅ done |
 | **M6** | Docs + cross-platform abi3 wheels + PyPI release via Trusted Publishing (OIDC) | 🟡 mostly done — docs, benchmarks, wheels & PyPI publishing all live |
 
 ## Guiding rules
