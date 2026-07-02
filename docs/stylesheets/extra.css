@@ -63,6 +63,19 @@ body {
   border-radius: 6px;
   font-size: 1em;
 }
+.ss-install {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ss-install code {
+  background: var(--ss-code-bg);
+  border: 1px solid var(--ss-border);
+  padding: 0.4em 0.8em;
+  border-radius: 8px;
+  font-size: 0.95em;
+}
 .ss-cta {
   margin-top: 1.75rem;
   display: flex;

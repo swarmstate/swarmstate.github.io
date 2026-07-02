@@ -11,7 +11,10 @@ hide:
 <p class="ss-tag">Drop-in state backend for LangGraph, CrewAI &amp; custom agent loops —
 Rust core, framework-agnostic, built for production.</p>
 
+<div class="ss-install" markdown="1">
 <code>pip install swarmstate</code>
+<code>uv add swarmstate</code>
+</div>
 
 <div class="ss-cta" markdown="1">
 [Get started](guide/store.md){ .md-button .md-button--primary }

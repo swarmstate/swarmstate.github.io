@@ -38,5 +38,4 @@ snapshotting and rule-based routing into a Rust core — with the GIL released o
 paths — targets both the latency and the token cost that production teams actually pay
 for.
 
-Benchmarks quantifying this (vs LangGraph's `SqliteSaver` and a plain in-memory dict)
-land in **M4**; see the [Roadmap](roadmap.md).
+See the [Benchmarks](benchmarks.md) page for measured latency and snapshot-cost numbers (vs `SqliteSaver` and a plain in-memory dict).

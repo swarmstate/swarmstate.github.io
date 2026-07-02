@@ -59,6 +59,8 @@ makes its state layer fast and portable.
 </div>
 
 !!! note "Honest benchmarks"
-    A reproducible benchmark suite (checkpoint latency p50/p99 and throughput vs
-    `SqliteSaver` and an in-memory dict, with hardware and versions documented) lands in
-    **M4** — see the [Roadmap](roadmap.md). We publish numbers, not adjectives.
+    On the LangGraph interface, `SwarmStateSaver.put` is **~12.8× faster than
+    `SqliteSaver`**, and `Store.snapshot()` is **O(1)** (hundreds of thousands of times
+    faster than deep-copying a large state). Full methodology, tables and charts —
+    reproducible, hardware/versions documented — are on the
+    [Benchmarks](benchmarks.md) page. We publish numbers, not adjectives.

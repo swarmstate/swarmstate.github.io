@@ -58,6 +58,7 @@ nav:
       - Custom multi-agent loop: tutorials/custom-loop.md
       - State portability: tutorials/portability.md
       - CrewAI — shared memory: tutorials/crewai.md
+  - Benchmarks: benchmarks.md
   - API reference: api.md
   - Architecture: architecture.md
   - Roadmap: roadmap.md
