@@ -58,6 +58,7 @@ nav:
       - Redis backend: guide/redis.md
       - Disk backend: guide/disk.md
       - Postgres backend: guide/postgres.md
+      - Observability: guide/observability.md
   - Tutorials:
       - Overview: tutorials/index.md
       - LangGraph - resumable agents: tutorials/langgraph.md

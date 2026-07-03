@@ -126,3 +126,22 @@ core_version() -> str
 
 Returns the version string of the compiled Rust core (matches
 `swarmstate.__version__`).
+
+## `swarmstate.observability`
+
+Opt-in metrics on checkpoint operations. Pass a sink to the checkpointer with
+`SwarmStateSaver(metrics=...)`; see the [Observability guide](guide/observability.md).
+
+```python
+class MetricsSink(Protocol):
+    def record(self, op: str, duration_s: float, *, thread_id: str, ok: bool) -> None: ...
+```
+
+| Sink | Description |
+| --- | --- |
+| `NullMetrics()` | discards everything (the default when no sink is passed) |
+| `InMemoryMetrics()` | accumulates counts + latency; `.summary()` → `{op: {count, errors, mean_ms, p50_ms, p99_ms}}`, `.reset()` |
+| `OpenTelemetryMetrics(meter=None)` | emits an OTel histogram + counter (needs `swarmstate[otel]`) |
+
+`op` is one of `"put"`, `"put_writes"`, `"get_tuple"`. When no sink is set the saver adds
+no measurement overhead at all.
