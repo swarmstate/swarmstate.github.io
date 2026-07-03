@@ -71,7 +71,23 @@ objects LangGraph does). Pass your own via `serde=...`:
 SwarmStateSaver(serde=my_serializer)
 ```
 
+## Incremental storage (opt-in)
+
+For long threads with large, mostly-stable channels, pass `incremental=True`. Each
+channel value is then stored once per version (deduplicated) instead of writing the
+whole checkpoint every step, saving storage and serialization:
+
+```python
+SwarmStateSaver(store, incremental=True)
+```
+
+Trade-off: `get_tuple` then does one read per channel to reassemble state, versus a
+single read in the default mode. Leave it off unless channels are large and change
+rarely.
+
 ## Async
 
-The async methods (`aput`, `aput_writes`, `aget_tuple`, `alist`) are implemented, so the
-saver works with `ainvoke` / `astream` and async graphs out of the box.
+The async methods (`aput`, `aput_writes`, `aget_tuple`, `alist`) run the store work on a
+worker thread (`asyncio.to_thread`), so they don't block the event loop; the store
+releases the GIL on its hot paths, so that work overlaps with the loop. `ainvoke` /
+`astream` and async graphs work out of the box.
