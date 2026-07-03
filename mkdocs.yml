@@ -57,6 +57,7 @@ nav:
       - LangGraph checkpointer: guide/langgraph.md
       - Redis backend: guide/redis.md
       - Disk backend: guide/disk.md
+      - Postgres backend: guide/postgres.md
   - Tutorials:
       - Overview: tutorials/index.md
       - LangGraph - resumable agents: tutorials/langgraph.md

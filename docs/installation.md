@@ -19,6 +19,7 @@ pip install "swarmstate[langgraph]"   # LangGraph checkpointer adapter
 pip install "swarmstate[crewai]"      # CrewAI state/memory adapter
 pip install "swarmstate[redis]"       # Redis backend (persistent, networked)
 pip install "swarmstate[disk]"        # SQLite disk backend (persistent, no server)
+pip install "swarmstate[postgres]"    # Postgres backend (persistent, networked)
 pip install "swarmstate[all]"         # everything above
 
 # with uv

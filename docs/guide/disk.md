@@ -50,6 +50,7 @@ graph = builder.compile(checkpointer=saver)
 | [`Store`](store.md) (memory) | no | no | no |
 | **`DiskStore`** | **yes** (a file) | one machine | no |
 | [`RedisStore`](redis.md) | yes | yes (networked) | yes (Redis) |
+| [`PostgresStore`](postgres.md) | yes | yes (networked) | yes (Postgres) |
 
 ## Layout & format
 
