@@ -40,3 +40,13 @@ store shared with your other agents (optionally on Redis/disk).
     uv add swarmstate
     uv add "swarmstate[langgraph]"
     ```
+
+!!! note "Runnable examples"
+    Prefer to read code? The repo ships self-contained, offline, deterministic scripts in
+    [`examples/`](https://github.com/swarmstate/swarmstate/tree/main/examples):
+
+    - [`support_triage.py`](https://github.com/swarmstate/swarmstate/blob/main/examples/support_triage.py)
+      - a LangGraph workflow combining `HandoffGraph` routing, `SwarmStateSaver`
+      checkpointing and snapshot/restore time-travel.
+    - [`state_portability.py`](https://github.com/swarmstate/swarmstate/blob/main/examples/state_portability.py)
+      - state as standard msgpack, read back and cross-checked.

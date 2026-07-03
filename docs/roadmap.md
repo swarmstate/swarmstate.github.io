@@ -12,6 +12,24 @@
 | **M5** | CrewAI adapter + optional Redis backend (state portability across frameworks) | ✅ done |
 | **M6** | Docs + cross-platform abi3 wheels + PyPI release via Trusted Publishing (OIDC) | ✅ done |
 
+## Since 0.1
+
+Beyond the initial milestones, these have shipped:
+
+| Area | Scope | Status |
+| --- | --- | --- |
+| **Backends** | [`DiskStore`](guide/disk.md) (SQLite file) and [`PostgresStore`](guide/postgres.md), alongside [`RedisStore`](guide/redis.md) - all drop-in, all msgpack wire-format | ✅ done |
+| **Incremental checkpoints** | opt-in per-version channel dedup in `SwarmStateSaver` (`incremental=True`) for long threads with large, stable channels | ✅ done |
+| **Sharded write locking** | namespace-hashed `RwLock`s so writers to different namespaces don't serialize (removes the lock bottleneck for free-threaded builds) | ✅ done |
+| **Observability** | opt-in [metrics hooks](guide/observability.md) on `put`/`put_writes`/`get_tuple` with in-memory and OpenTelemetry sinks (`swarmstate[otel]`) | ✅ done |
+| **Developer experience** | strict `mypy` in CI, exposed `dumps`/`loads` codec, runnable [examples](https://github.com/swarmstate/swarmstate/tree/main/examples) | ✅ done |
+
+## Under consideration
+
+- **Docs versioning** (per-release documentation) once a stable line is cut.
+- **Free-threaded (`cp314t`) wheels** to turn the sharded store into measurable
+  multi-core throughput.
+
 ## Guiding rules
 
 - **Zero install friction** - `pip install swarmstate` must work with no compiler.

@@ -12,9 +12,11 @@ swarmstate/
 │  ├─ checkpoint.rs  # LangGraph checkpoint types            (M3)
 │  └─ graph.rs       # handoff/dependency graph               (M2)
 └─ python/swarmstate/
-   ├─ __init__.py    # public API: Store, Snapshot, ...
-   ├─ _core.pyi      # type stubs for the Rust module
-   └─ integrations/  # langgraph.py, crewai.py, redis.py      (M3+)
+   ├─ __init__.py       # public API: Store, Snapshot, HandoffGraph, dumps/loads
+   ├─ _core.pyi         # type stubs for the Rust module
+   ├─ observability.py  # opt-in metrics sinks for checkpoint ops
+   ├─ integrations/     # langgraph.py, crewai.py                 (M3, M5)
+   └─ backends/         # disk.py, redis.py, postgres.py          (persistent stores)
 ```
 
 ## Design principles
@@ -30,9 +32,13 @@ swarmstate/
 - **Immutable snapshots via structural sharing.** The store is backed by a persistent
   `im::HashMap`; cloning it is O(1) and snapshots are isolated from later writes.
 - **Stable, language-neutral state format.** Values serialize to msgpack so state is
-  readable from any language or framework - the antidote to state lock-in.
+  readable from any language or framework - the antidote to state lock-in. The same wire
+  format backs every persistent backend ([disk](guide/disk.md), [redis](guide/redis.md),
+  [postgres](guide/postgres.md)), so a store swap never re-encodes state.
 - **Thin, fully typed Python API.** Ergonomic wrappers over the PyO3 classes with
-  complete type hints and `py.typed`.
+  complete type hints, `py.typed`, and strict `mypy` in CI.
+- **Observability without coupling.** The checkpointer takes an optional
+  [metrics sink](guide/observability.md); when none is set it adds no overhead at all.
 
 ## Why a Rust core?
 

@@ -39,9 +39,16 @@ a `Store`.
 </div>
 
 <div class="ss-card" markdown="1">
-### [Redis backend](redis.md)
-`RedisStore` - the same `Store` interface, but persistent and shareable across
-processes.
+### Persistent backends
+Same `Store` interface, but durable and shareable: [`DiskStore`](disk.md) (a SQLite
+file, no server), [`RedisStore`](redis.md) and [`PostgresStore`](postgres.md)
+(networked).
+</div>
+
+<div class="ss-card" markdown="1">
+### [Observability](observability.md)
+Opt-in metrics on checkpoint operations (latency, counts, errors), with an in-memory
+sink and an OpenTelemetry sink. Zero overhead when unused.
 </div>
 
 </div>
@@ -52,9 +59,13 @@ processes.
 - The **`HandoffGraph`** is independent - deterministic routing you can use with or
   without the store.
 - The **LangGraph checkpointer** (`SwarmStateSaver`) *uses* a `Store` to hold
-  checkpoints; swap the store for a **`RedisStore`** to make those checkpoints
-  persistent. Because every backend shares one wire format, state is portable across
-  frameworks (see [State portability](../tutorials/portability.md)).
+  checkpoints; swap the in-memory store for a **[`DiskStore`](disk.md)**,
+  **[`RedisStore`](redis.md)** or **[`PostgresStore`](postgres.md)** to make those
+  checkpoints persistent, with no other code change. Because every backend shares one
+  msgpack wire format, state is portable across frameworks (see
+  [State portability](../tutorials/portability.md)).
+- **[Observability](observability.md)** is orthogonal: attach a metrics sink to the
+  checkpointer to measure `put` / `put_writes` / `get_tuple` without changing behaviour.
 
 ## New here?
 

@@ -10,7 +10,8 @@ every step commits to disk).
 variants), but backed by a swarmstate [`Store`](store.md) with a Rust core. You get
 faster checkpoints than SQLite (see the [benchmarks](../benchmarks.md)), and - because the
 state lives in a `Store` - the ability to snapshot or roll back **every thread at once**.
-Point it at a [`RedisStore`](redis.md) and those checkpoints become persistent, too.
+Point it at a persistent backend ([`DiskStore`](disk.md), [`RedisStore`](redis.md) or
+[`PostgresStore`](postgres.md)) and those checkpoints survive restarts, too.
 
 ```bash
 pip install "swarmstate[langgraph]"
@@ -84,6 +85,38 @@ SwarmStateSaver(store, incremental=True)
 Trade-off: `get_tuple` then does one read per channel to reassemble state, versus a
 single read in the default mode. Leave it off unless channels are large and change
 rarely.
+
+## Durable, shared checkpoints
+
+The saver holds checkpoints in whatever `Store` you give it, so making them persistent is
+a backend swap, nothing else changes:
+
+```python
+from swarmstate.backends.disk import DiskStore          # a SQLite file, no server
+from swarmstate.integrations.langgraph import SwarmStateSaver
+
+saver = SwarmStateSaver(DiskStore("checkpoints.db"))     # or RedisStore / PostgresStore
+graph = builder.compile(checkpointer=saver)
+```
+
+See the [Disk](disk.md), [Redis](redis.md) and [Postgres](postgres.md) guides for the
+"which backend?" trade-offs.
+
+## Observability
+
+Pass a metrics sink to measure the latency and outcome of each checkpoint operation, with
+zero overhead when unused:
+
+```python
+from swarmstate.observability import InMemoryMetrics     # or OpenTelemetryMetrics
+
+metrics = InMemoryMetrics()
+saver = SwarmStateSaver(metrics=metrics)
+# ... run the graph ...
+metrics.summary()   # {"put": {"count": ..., "p50_ms": ...}, "get_tuple": {...}}
+```
+
+Full details in the [Observability guide](observability.md).
 
 ## Async
 
