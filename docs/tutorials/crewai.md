@@ -1,20 +1,22 @@
-# Tutorial - CrewAI: shared, persistent memory
+# Tutorial - CrewAI: shared, portable memory
 
-`SwarmStateStorage` implements CrewAI's storage protocol - `save`, `search`, `reset` -
-backed by a swarmstate [`Store`](../guide/store.md). Your crew's memory becomes
-**durable, snapshot-able and portable**: the same store can hold your LangGraph
-checkpoints and be read by other systems.
+`SwarmStateStorage` is a small, dependency-free **keyword** memory store (`save`,
+`search`, `reset`) backed by a swarmstate [`Store`](../guide/store.md). Its value is
+**portability and durability**: crew memories live in the same store as your LangGraph
+checkpoints, can be snapshotted, and can be read by any other system.
 
 ```bash
 pip install swarmstate crewai
 # or: uv add swarmstate crewai
 ```
 
-!!! note "How it's built"
-    `SwarmStateStorage` **implements the protocol** rather than importing CrewAI, so it
-    is independent of any CrewAI version - you wire it into your crew wherever CrewAI
-    accepts a storage object. Search is **lexical** (token-overlap), deterministic and
-    dependency-free; for embedding-based semantic recall, use CrewAI's RAG storage.
+!!! warning "This is not CrewAI's built-in memory backend"
+    As of CrewAI 1.x, the native memory `StorageBackend` is **embedding-based** (it
+    stores `MemoryRecord`s and searches by vector similarity) - a vector store, which
+    swarmstate is not. `SwarmStateStorage` is a lightweight **lexical** alternative you
+    wire in yourself (e.g. from a task callback or your own loop) when you want durable,
+    portable, dependency-free recall. For semantic RAG recall, use CrewAI's own storage.
+    *(Verified against crewai 1.15.)*
 
 ## Create the storage
 
@@ -49,17 +51,24 @@ storage.reset()          # clear this namespace
 `search` returns `{"context", "metadata", "score"}` entries, ranked by token overlap
 then recency.
 
-## Wire it into a crew
+## Use it around a crew
 
-Pass the storage where your CrewAI setup accepts a memory/storage object (e.g. an
-external-memory slot), then run the crew as usual:
+You drive it yourself - typically from a task callback or right after `kickoff()` -
+rather than plugging it into CrewAI's native (embedding-based) memory slot:
 
 ```python
 from crewai import Agent, Task, Crew          # your normal setup
 
-# ... define agents & tasks, attach `storage` to the crew's memory ...
-# result = crew.kickoff()
+# ... define agents & tasks ...
+result = crew.kickoff()
+storage.save(str(result), {"run": "research", "ts": "2026-07-03"})
+
+# next run, recall prior findings before kicking off again
+prior = storage.search("research findings", limit=5)
 ```
+
+This keeps the useful part - **durable, portable, snapshot-able recall in a shared
+store** - without pretending to be a vector database.
 
 ## Portability: one store, many agents
 

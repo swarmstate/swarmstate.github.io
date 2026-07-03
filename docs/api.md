@@ -96,6 +96,28 @@ guide](guide/handoff.md) for the condition mini-language.
 Raises `ValueError` for an invalid `on_cycle`, an invalid condition, or (when
 `on_cycle="error"`) an edge that would create a cycle.
 
+## `swarmstate.dumps` / `swarmstate.loads`
+
+```python
+dumps(obj: Any) -> bytes
+loads(data: bytes) -> Any
+```
+
+Serialize/deserialize with swarmstate's stable **msgpack** codec (the same one the store
+uses). The output is standard msgpack, so it round-trips with any msgpack library in any
+language:
+
+```python
+import swarmstate as ss, msgpack
+
+raw = ss.dumps({"a": 1, "b": [1, 2], "c": b"\xff"})
+msgpack.unpackb(raw, raw=False)          # -> {"a": 1, "b": [1, 2], "c": b"\xff"}
+ss.loads(msgpack.packb({"x": 1}))        # -> {"x": 1}
+```
+
+Supported types: `None`, `bool`, `int` (64-bit), `float`, `str`, `bytes`, `list`,
+`tuple` (returns as `list`), `dict`. Unsupported types raise `TypeError`.
+
 ## `swarmstate.core_version()`
 
 ```python
