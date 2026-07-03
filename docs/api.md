@@ -129,8 +129,9 @@ Returns the version string of the compiled Rust core (matches
 
 ## `swarmstate.observability`
 
-Opt-in metrics on checkpoint operations. Pass a sink to the checkpointer with
-`SwarmStateSaver(metrics=...)`; see the [Observability guide](guide/observability.md).
+Opt-in metrics and tracing on checkpoint operations. Attach them to the checkpointer with
+`SwarmStateSaver(metrics=..., tracer=...)`; see the
+[Observability guide](guide/observability.md).
 
 ```python
 class MetricsSink(Protocol):
@@ -143,5 +144,13 @@ class MetricsSink(Protocol):
 | `InMemoryMetrics()` | accumulates counts + latency; `.summary()` → `{op: {count, errors, mean_ms, p50_ms, p99_ms}}`, `.reset()` |
 | `OpenTelemetryMetrics(meter=None)` | emits an OTel histogram + counter (needs `swarmstate[otel]`) |
 
-`op` is one of `"put"`, `"put_writes"`, `"get_tuple"`. When no sink is set the saver adds
-no measurement overhead at all.
+```python
+get_tracer(name: str = "swarmstate") -> Tracer
+```
+
+Returns an OpenTelemetry tracer (lazy import; needs `swarmstate[otel]`) for use as
+`SwarmStateSaver(tracer=get_tracer())`. Each operation opens a `swarmstate.checkpoint.<op>`
+span; on failure the span records the exception and is marked `ERROR`.
+
+`op` is one of `"put"`, `"put_writes"`, `"get_tuple"`. With neither `metrics` nor `tracer`
+set, the saver adds no overhead at all.
