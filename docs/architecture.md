@@ -23,6 +23,10 @@ swarmstate/
   traversal run entirely in the Rust core.
 - **The GIL is released** (`py.allow_threads`) on any operation that doesn't touch
   Python objects - lock acquisition, map mutation, snapshot cloning.
+- **Sharded write locking.** Namespaces are hashed across independent `RwLock`s, so
+  concurrent writers to different namespaces don't serialize on one global lock. (On
+  standard CPython the GIL still serializes the serialization step; the sharding removes
+  the lock bottleneck for free-threaded builds.)
 - **Immutable snapshots via structural sharing.** The store is backed by a persistent
   `im::HashMap`; cloning it is O(1) and snapshots are isolated from later writes.
 - **Stable, language-neutral state format.** Values serialize to msgpack so state is
