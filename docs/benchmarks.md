@@ -52,6 +52,26 @@ it stays flat as state grows, while `copy.deepcopy` is O(n):
 This is what makes [time-travel over the whole checkpoint DB](tutorials/langgraph.md)
 practically free.
 
+## Concurrency scaling (free-threaded)
+
+The store shards its write locks and releases the GIL on the hot paths, so on a
+**free-threaded (no-GIL) CPython build** it scales across cores. Same set+get workload,
+8 threads writing distinct namespaces:
+
+| Build | 1 thread | 8 threads | scaling |
+| --- | --- | --- | --- |
+| CPython 3.14 (GIL) | ~990k ops/s | ~196k ops/s | **0.2x** |
+| Free-threaded 3.13t | ~1.0M ops/s | **~1.9M ops/s** | **~1.9x** |
+
+!!! warning "This only shows up without the GIL"
+    On standard (GIL) CPython, adding threads makes this workload **slower**: the GIL
+    serializes the Python-side work and thread overhead dominates. The multi-core win
+    needs a free-threaded interpreter (`cp313t`), for which swarmstate ships
+    version-specific wheels. See [Architecture](architecture.md#free-threaded-no-gil).
+
+Batching compounds it: on the free-threaded build, `set_many` (batches of 50) reaches
+**~7.3M set/s** versus **~1.9M set/s** for individual `set`s at 8 threads (~4x).
+
 ## Environment
 
 | | |

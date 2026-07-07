@@ -56,6 +56,28 @@ store.contains("agents", "researcher")       # -> True
 store.delete("agents", "researcher")         # -> True  (False if nothing was there)
 ```
 
+## Batch reads and writes
+
+When you have many entries, `set_many` and `get_many` do the whole batch in one call:
+the in-memory core releases the GIL once and locks each shard once for the batch (not once
+per item), and the persistent backends turn it into a single round-trip (a Redis pipeline,
+one SQL statement). `get_many` preserves input order and returns `None` for missing keys.
+
+```python
+store.set_many([
+    ("agents", "researcher", {"status": "running"}),
+    ("agents", "writer", {"status": "idle"}),
+    ("workflow", "main", {"step": 3}),
+])
+
+store.get_many([("agents", "researcher"), ("agents", "missing"), ("workflow", "main")])
+# -> [{"status": "running"}, None, {"step": 3}]
+```
+
+This is worth it for bulk loads and for networked backends, where the per-call round-trip
+dominates. On a free-threaded build the win is larger still (see
+[Architecture](../architecture.md#free-threaded-no-gil)).
+
 ## Inspecting what's stored
 
 ```python
@@ -106,6 +128,11 @@ for t in threads:
 
 len(store)   # -> 8000, with no locking on your side
 ```
+
+On **standard CPython** the GIL still serializes the Python-side work, so this is about
+correctness and not blocking, more than raw multi-core speed. On a **free-threaded
+(no-GIL) build** the same code scales across cores: see
+[Architecture: free-threaded](../architecture.md#free-threaded-no-gil).
 
 ## Where to go next
 

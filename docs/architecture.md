@@ -40,6 +40,28 @@ swarmstate/
 - **Observability without coupling.** The checkpointer takes an optional
   [metrics sink](guide/observability.md); when none is set it adds no overhead at all.
 
+## Free-threaded (no-GIL)
+
+The sharded locking exists for a reason: on a **free-threaded CPython build** (`cp313t`,
+[PEP 703](https://peps.python.org/pep-0703/)) there is no GIL to serialize the Python-side
+work, so writers to different namespaces run genuinely in parallel. The Rust core declares
+support with `m.gil_used(false)`, so importing it does not force the GIL back on.
+
+The payoff, same set+get workload, 8 threads on Apple Silicon:
+
+| Build | 1 thread | 8 threads | scaling |
+| --- | --- | --- | --- |
+| CPython 3.14 (GIL) | ~990k ops/s | ~196k ops/s | **0.2x** (slower) |
+| Free-threaded 3.13t | ~1.0M ops/s | **~1.9M ops/s** | **~1.9x** (faster) |
+
+At 8 threads the free-threaded build does roughly **10x** the throughput of the GIL build,
+which gets *slower* as threads are added. Version-specific `cp313t` wheels ship alongside
+the abi3 wheels (free-threaded builds can't use the stable ABI).
+
+Batch operations ([`set_many`/`get_many`](guide/store.md#batch-reads-and-writes)) compound
+this: they release the GIL once and lock each shard once for the whole batch, so on a
+free-threaded build `set_many` reaches roughly **4x** the throughput of individual `set`s.
+
 ## Why a Rust core?
 
 Per-node checkpointing backed by SQLite/Postgres becomes a bottleneck at scale, and

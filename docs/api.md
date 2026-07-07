@@ -30,6 +30,8 @@ A framework-agnostic state store with immutable snapshots.
 | --- | --- | --- |
 | `set(namespace, key, value)` | `None` | store `value` under `(namespace, key)` |
 | `get(namespace, key, default=None)` | `Any` | value at `(namespace, key)`, or `default` if absent |
+| `set_many(items)` | `None` | store many `(namespace, key, value)` triples in one call (one GIL release, one lock per shard) |
+| `get_many(pairs)` | `list[Any]` | fetch many `(namespace, key)` pairs in input order; missing entries come back as `None` |
 | `contains(namespace, key)` | `bool` | whether `(namespace, key)` exists |
 | `delete(namespace, key)` | `bool` | delete; `True` if a value was removed |
 | `keys(namespace)` | `list[str]` | keys within a namespace |
