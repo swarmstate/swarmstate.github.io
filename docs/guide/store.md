@@ -131,7 +131,8 @@ len(store)   # -> 8000, with no locking on your side
 
 On **standard CPython** the GIL still serializes the Python-side work, so this is about
 correctness and not blocking, more than raw multi-core speed. On a **free-threaded
-(no-GIL) build** the same code scales across cores: see
+(no-GIL) build** the same code keeps its throughput as threads grow instead of collapsing
+under the GIL (about 10x the GIL build at 8 threads): see
 [Architecture: free-threaded](../architecture.md#free-threaded-no-gil).
 
 ## Where to go next

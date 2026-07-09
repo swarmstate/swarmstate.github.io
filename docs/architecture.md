@@ -42,25 +42,31 @@ swarmstate/
 
 ## Free-threaded (no-GIL)
 
-The sharded locking exists for a reason: on a **free-threaded CPython build** (`cp313t`,
-[PEP 703](https://peps.python.org/pep-0703/)) there is no GIL to serialize the Python-side
-work, so writers to different namespaces run genuinely in parallel. The Rust core declares
-support with `m.gil_used(false)`, so importing it does not force the GIL back on.
+The store shards its write locks and releases the GIL on the hot paths, so on a
+**free-threaded CPython build** (`cp313t`, [PEP 703](https://peps.python.org/pep-0703/))
+it does not serialize behind the interpreter lock. The Rust core declares support with
+`m.gil_used(false)`, so importing it does not force the GIL back on.
 
-The payoff, same set+get workload, 8 threads on Apple Silicon:
+What free-threading buys here is **not linear multi-core scaling** - a set/get workload
+allocates (msgpack buffers, Python result objects), and the allocator is a shared resource,
+so throughput does not grow with cores. What it buys is **not collapsing**: under the GIL,
+adding threads makes this workload dramatically *slower*; free-threaded holds throughput
+roughly flat. Median of 5 runs, set+get, Apple Silicon:
 
-| Build | 1 thread | 8 threads | scaling |
+| Build | 1 thread | 8 threads | 8-thread throughput |
 | --- | --- | --- | --- |
-| CPython 3.14 (GIL) | ~990k ops/s | ~196k ops/s | **0.2x** (slower) |
-| Free-threaded 3.13t | ~1.0M ops/s | **~1.9M ops/s** | **~1.9x** (faster) |
+| CPython (GIL) | ~1.8M ops/s | ~130k ops/s | baseline |
+| Free-threaded (`cp313t`) | ~2.2M ops/s | **~1.8M ops/s** | **~14x the GIL build** |
 
-At 8 threads the free-threaded build does roughly **10x** the throughput of the GIL build,
-which gets *slower* as threads are added. Version-specific `cp313t` wheels ship alongside
-the abi3 wheels (free-threaded builds can't use the stable ABI).
+So single-threaded the free-threaded build is roughly 2x (no per-call GIL machinery), and at
+8 threads it sustains over **10x** the throughput of the GIL build, which has collapsed.
+Version-specific `cp313t` wheels ship alongside the abi3 wheels (free-threaded builds can't
+use the stable ABI).
 
-Batch operations ([`set_many`/`get_many`](guide/store.md#batch-reads-and-writes)) compound
-this: they release the GIL once and lock each shard once for the whole batch, so on a
-free-threaded build `set_many` reaches roughly **4x** the throughput of individual `set`s.
+Batch operations ([`set_many`/`get_many`](guide/store.md#batch-reads-and-writes)) help
+independently: they release the GIL once and lock each shard once for the whole batch, so on
+a free-threaded build at 8 threads `set_many` reaches roughly **3x** the throughput of
+individual `set`s.
 
 ## Why a Rust core?
 

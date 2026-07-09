@@ -52,25 +52,28 @@ it stays flat as state grows, while `copy.deepcopy` is O(n):
 This is what makes [time-travel over the whole checkpoint DB](tutorials/langgraph.md)
 practically free.
 
-## Concurrency scaling (free-threaded)
+## Concurrency (free-threaded vs GIL)
 
-The store shards its write locks and releases the GIL on the hot paths, so on a
-**free-threaded (no-GIL) CPython build** it scales across cores. Same set+get workload,
-8 threads writing distinct namespaces:
+The store shards its write locks and releases the GIL on the hot paths. On a
+**free-threaded (no-GIL) CPython build** the same code does not serialize behind the
+interpreter lock. Median of 5 runs, set+get, distinct namespaces per thread:
 
-| Build | 1 thread | 8 threads | scaling |
+| Build | 1 thread | 8 threads | 8-thread vs GIL |
 | --- | --- | --- | --- |
-| CPython 3.14 (GIL) | ~990k ops/s | ~196k ops/s | **0.2x** |
-| Free-threaded 3.13t | ~1.0M ops/s | **~1.9M ops/s** | **~1.9x** |
+| CPython (GIL) | ~1.8M ops/s | ~130k ops/s | baseline |
+| Free-threaded (`cp313t`) | ~2.2M ops/s | **~1.8M ops/s** | **~14x** |
 
-!!! warning "This only shows up without the GIL"
-    On standard (GIL) CPython, adding threads makes this workload **slower**: the GIL
-    serializes the Python-side work and thread overhead dominates. The multi-core win
-    needs a free-threaded interpreter (`cp313t`), for which swarmstate ships
+!!! warning "It's about not collapsing, not linear scaling"
+    This workload is **allocation-bound** (msgpack buffers, Python result objects), so it
+    does **not** speed up with more cores on *either* build. The difference is the shape:
+    under the GIL, adding threads makes it dramatically **slower** (it collapses); the
+    free-threaded build holds throughput roughly flat, so at 8 threads it does about **10x**
+    the GIL build. Single-threaded, free-threaded is ~2x (no per-call GIL machinery). The
+    free-threaded win needs a `cp313t` interpreter, for which swarmstate ships
     version-specific wheels. See [Architecture](architecture.md#free-threaded-no-gil).
 
-Batching compounds it: on the free-threaded build, `set_many` (batches of 50) reaches
-**~7.3M set/s** versus **~1.9M set/s** for individual `set`s at 8 threads (~4x).
+Batching helps independently: on the free-threaded build at 8 threads, `set_many` (batches
+of 50) reaches roughly **3x** the throughput of individual `set`s.
 
 ## Environment
 
