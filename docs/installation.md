@@ -10,6 +10,11 @@ uv add swarmstate
 macOS (x86_64/arm64) and Windows (amd64). One wheel serves Python 3.9+ and **no Rust
 compiler is required** to install.
 
+Free-threaded (no-GIL) CPython can't use the stable ABI, so it gets version-specific
+**`cp313t`** wheels for Linux (x86_64/aarch64), macOS (arm64) and Windows (x64) — installed
+automatically on a free-threaded interpreter. See
+[Architecture: free-threaded](architecture.md#free-threaded-no-gil).
+
 ## Optional extras
 
 Integrations use lazy imports and are pulled in via extras:

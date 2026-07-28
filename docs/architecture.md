@@ -60,8 +60,8 @@ roughly flat. Median of 5 runs, set+get, Apple Silicon:
 
 So single-threaded the free-threaded build is roughly 2x (no per-call GIL machinery), and at
 8 threads it sustains over **10x** the throughput of the GIL build, which has collapsed.
-Version-specific `cp313t` wheels ship alongside the abi3 wheels (free-threaded builds can't
-use the stable ABI).
+Version-specific `cp313t` wheels ship for Linux (x86_64/aarch64), macOS (arm64) and Windows
+(x64) alongside the abi3 wheels (free-threaded builds can't use the stable ABI).
 
 Batch operations ([`set_many`/`get_many`](guide/store.md#batch-reads-and-writes)) help
 independently: they release the GIL once and lock each shard once for the whole batch, so on
