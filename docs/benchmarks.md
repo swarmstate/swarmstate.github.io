@@ -5,7 +5,7 @@ Every number here is **reproducible** - run
 yourself:
 
 ```bash
-pip install "swarmstate[langgraph]" langgraph-checkpoint-sqlite matplotlib
+pip install "swarmstate[langgraph,disk]" langgraph-checkpoint-sqlite matplotlib
 # or: uv add "swarmstate[langgraph]" langgraph-checkpoint-sqlite matplotlib
 python benchmarks/run.py --iters 5000 --seed 7
 ```
@@ -13,27 +13,70 @@ python benchmarks/run.py --iters 5000 --seed 7
 !!! warning "Read the setup before comparing"
     - **Release build** (published wheels / `maturin develop --release`). Debug builds
       are several times slower.
-    - `SwarmStateSaver` and `InMemorySaver` are **in-memory**; `SqliteSaver` is
-      **file-backed** (persists to disk). The `put` comparison reflects the cost of
-      SQLite-backed persistence as commonly configured; a persistent swarmstate backend
-      (redis/disk) is on the [roadmap](roadmap.md).
-    - Warm cache, single process. Hardware/versions below.
+    - **Durable is compared with durable.** A checkpointer that survives a restart does
+      strictly more work than one that does not, so the two groups below are kept apart:
+      `SwarmStateSaver` over [`DiskStore`](guide/disk.md) against `SqliteSaver` (both
+      SQLite files in WAL mode), and `SwarmStateSaver` against `InMemorySaver` (neither
+      persists). Earlier revisions of this page paired an in-memory store against a
+      file-backed one and reported the gap as a speedup; that measured the price of
+      persistence, not an implementation.
+    - **Same fsync policy, or say so.** `DiskStore` runs `synchronous=NORMAL`;
+      `SqliteSaver` ships `synchronous=FULL`. Both appear below, so "faster" is never
+      confused with "weaker durability".
+    - Warm cache, single process, no competing load. Percentiles are of individual calls,
+      not an average of a batch. Hardware/versions below.
 
-## Checkpoint latency (LangGraph interface)
+## Reading the latest checkpoint, as a thread grows
+
+![Read latency vs thread length](assets/bench_read_scaling.svg){ width="720" }
+
+This is the operation every resume performs. A saver that finds the newest checkpoint by
+scanning the thread's keys gets slower as the conversation lives; one that looks it up does
+not:
+
+| checkpoints in the thread | `SwarmStateSaver` | `InMemorySaver` |
+| --- | --- | --- |
+| 5 | 7.4 µs | 5.5 µs |
+| 50 | 7.3 µs | 6.2 µs |
+| 500 | 7.3 µs | 13.9 µs |
+| 2 000 | **7.5 µs** | 40.0 µs |
+
+Flat against rising. At five checkpoints the reference saver is *faster*; by two thousand
+it is five times slower, and the gap keeps widening. swarmstate resolves "latest" by
+lookup — an O(1) pointer for in-memory stores, an indexed `max(key)` on the SQL backends —
+instead of scanning. This is the difference that shows up in a long-running deployment,
+and it is the number worth quoting.
+
+## Checkpoint latency, durable
 
 ![Checkpointer latency](assets/bench_latency.svg){ width="720" }
 
-Per-operation latency through LangGraph's `BaseCheckpointSaver` interface:
+Both are SQLite files in WAL mode. The first two rows share the same `synchronous=NORMAL`
+fsync policy; the third is `SqliteSaver` as it ships, a stronger guarantee:
 
-| Checkpointer | `put` p50 | `put` p99 | `put` throughput | `get_tuple` p50 |
-| --- | --- | --- | --- | --- |
-| **SwarmStateSaver** | **5.8 µs** | 13.9 µs | **~158k ops/s** | **7.5 µs** |
-| InMemorySaver | 4.0 µs | 8.5 µs | ~203k ops/s | 81.8 µs |
-| SqliteSaver (file) | 74.0 µs | 323 µs | ~9.5k ops/s | 14.5 µs |
+| Checkpointer | `put` p50 | `put` p99 | `get_tuple` p50 |
+| --- | --- | --- | --- |
+| **`SwarmStateSaver(DiskStore(...))`** · `synchronous=NORMAL` | **34.1 µs** | 87.6 µs | 15.7 µs |
+| `SqliteSaver` · same `synchronous=NORMAL` | 34.7 µs | 75.6 µs | 14.5 µs |
+| `SqliteSaver` · shipped `synchronous=FULL` | 63.9 µs | 211.9 µs | 14.4 µs |
 
-- **`put` is ~12.8× faster than `SqliteSaver`** - no per-step disk commit.
-- **`get_tuple` (latest) is ~11× faster than `InMemorySaver`**: swarmstate keeps an O(1)
-  "latest checkpoint" pointer, where the reference saver scans keys.
+Durable writes are **on par** with `SqliteSaver` at a matched fsync policy (1.02×), and
+about **1.9× faster** than its shipped default — which buys stronger durability, not
+nothing.
+
+## Checkpoint latency, in-memory
+
+Neither of these survives a restart:
+
+| Checkpointer | `put` p50 | `put` p99 | `get_tuple` p50 |
+| --- | --- | --- | --- |
+| `SwarmStateSaver` | 6.2 µs | 11.7 µs | **7.8 µs** |
+| `InMemorySaver` | **4.1 µs** | 7.5 µs | 63.5 µs |
+
+Writes are **slower** here (0.66×): swarmstate serializes state to msgpack bytes on the
+way in, which is exactly what makes it portable across frameworks and snapshots O(1).
+Reads are 8× faster at this thread length — and, per the first table, that factor is a
+function of how long the thread has been running.
 
 ## Snapshot cost vs state size
 
@@ -42,12 +85,16 @@ Per-operation latency through LangGraph's `BaseCheckpointSaver` interface:
 `Store.snapshot()` is **O(1)** (persistent data structure + a running byte counter), so
 it stays flat as state grows, while `copy.deepcopy` is O(n):
 
-| entries | `Store.snapshot()` | `dict` deepcopy | speedup |
+| entries | `Store.snapshot()` | `dict` deepcopy | ratio |
 | --- | --- | --- | --- |
-| 100 | 0.0003 ms | 0.086 ms | ~300× |
-| 1,000 | 0.0002 ms | 0.86 ms | ~4,000× |
-| 10,000 | 0.0002 ms | 9.3 ms | ~44,000× |
-| 50,000 | 0.0002 ms | 52 ms | **~236,000×** |
+| 100 | 0.00049 ms | 0.085 ms | ~170× |
+| 1,000 | 0.00045 ms | 0.82 ms | ~1,800× |
+| 10,000 | 0.00052 ms | 8.9 ms | ~17,000× |
+| 50,000 | 0.00047 ms | 50.2 ms | **~107,000×** |
+
+Diffing two snapshots shares the same property: untouched shards and namespaces are
+literally the same structure in both, so a diff costs the *changes* and not the size of
+the store — 11 µs over 2 000 namespaces with one changed entry.
 
 This is what makes [time-travel over the whole checkpoint DB](tutorials/langgraph.md)
 practically free.
@@ -81,8 +128,8 @@ of 50) reaches roughly **3x** the throughput of individual `set`s.
 | --- | --- |
 | Machine | Apple Silicon (macOS, arm64) |
 | Python | 3.14 |
-| swarmstate | 0.4.0 (release wheel) |
-| langgraph | 1.2.x · langgraph-checkpoint 4.x |
-| iters / warmup | 4,000 / 400 · seed 7 |
+| swarmstate | 0.11.0 (release build) |
+| langgraph | 1.2.x · langgraph-checkpoint 4.x · langgraph-checkpoint-sqlite 3.x |
+| iters / warmup | 3,000 / 300 · seed 7 |
 
 Numbers vary by hardware - regenerate on yours with the command above.

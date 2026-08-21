@@ -52,6 +52,22 @@ graph = builder.compile(checkpointer=saver)
 | [`RedisStore`](redis.md) | yes | yes (networked) | yes (Redis) |
 | [`PostgresStore`](postgres.md) | yes | yes (networked) | yes (Postgres) |
 
+## Operational notes
+
+- **WAL + `synchronous=NORMAL`.** Crash-safe — never a corrupt file — but a power loss can
+  cost the last transactions. That is a weaker guarantee than SQLite's `FULL` default, and
+  it is why the [benchmarks](../benchmarks.md#checkpoint-latency-durable) compare against
+  `SqliteSaver` at *both* settings.
+- **One connection per thread.** In WAL mode readers run concurrently with a writer, so the
+  store does not funnel them through a single mutex. `busy_timeout` (from `timeout=`, 5 s
+  by default) makes concurrent writers wait rather than error.
+- **Multi-statement writes are transactional.** `set_many` and `restore` run in one
+  transaction, so an interrupted restore cannot leave the table half-emptied.
+- **`max_key` is index-backed**, answered from the `(ns, k)` primary key — which is why the
+  LangGraph saver asks this backend directly for the newest checkpoint instead of keeping a
+  pointer.
+- Call `close()` when done; it closes every thread's connection.
+
 ## Layout & format
 
 A single table `kv(ns, k, v)` keyed by `(ns, k)`, where `v` is msgpack bytes. Because the

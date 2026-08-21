@@ -45,6 +45,14 @@ markdown_extensions:
       alternate_style: true
   - tables
 
+# Turn link problems into build failures (CI runs `--strict`): a moved heading
+# silently breaking a cross-reference is the usual way docs rot.
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
 nav:
   - Home: index.md
   - Why: why.md

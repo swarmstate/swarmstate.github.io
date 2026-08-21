@@ -77,6 +77,35 @@ later.diff(base)
 Diffing is how you persist or transmit **only what changed** between two checkpoints
 instead of the whole state - the basis for efficient incremental checkpointing.
 
+It is also cheap for the same reason snapshots are: untouched shards and namespaces are
+literally the same structure in both snapshots, so pointer identity settles them without a
+walk. A diff costs the *changes*, not the size of the store — 11 µs over 2 000 namespaces
+with one changed entry.
+
+## Retention
+
+A snapshot you hold is always valid. Whether the **store** also keeps its own list of them
+is opt-in, because a retained snapshot pins every value it saw:
+
+```python
+ss.Store()                      # max_history=0: retains none (the default)
+ss.Store(max_history=10)        # the last 10, reachable via history()
+ss.Store(max_history=None)      # every one — grows without bound, deliberately
+
+store = ss.Store(max_history=10)
+store.snapshot()
+store.history()                 # -> [Snapshot, ...] oldest first
+store.clear_history()           # release the state they pin
+```
+
+Retained snapshots are ordinary snapshots: `store.restore(store.history()[0])` works. The
+default keeps none precisely because retention is memory you did not ask for — 2 000
+snapshots of a 5 KB value hold ~31 MB.
+
+!!! note "For LangGraph threads, use retention on the saver instead"
+    `max_history` bounds *snapshots*. To bound the checkpoints themselves, see
+    [`max_checkpoints_per_thread`](langgraph.md#retention).
+
 ## Next
 
 - [Handoff graph](handoff.md) - deterministic routing between agents.

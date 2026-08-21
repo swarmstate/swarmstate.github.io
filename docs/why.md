@@ -59,8 +59,12 @@ makes its state layer fast and portable.
 </div>
 
 !!! note "Benchmarks"
-    On the LangGraph interface, `SwarmStateSaver.put` is **~12.8× faster than
-    `SqliteSaver`**, and `Store.snapshot()` is **O(1)** (hundreds of thousands of times
-    faster than deep-copying a large state). Full methodology, tables and charts -
-    reproducible, with hardware and versions documented - are on the
+    Reading the latest checkpoint takes the **same time whether a thread holds 5
+    checkpoints or 2 000** (~7 µs), where LangGraph's `InMemorySaver` climbs from ~5 µs to
+    ~40 µs, because it scans the thread's keys for a maximum. `Store.snapshot()` is
+    **O(1)** — ~0.5 µs at any size, against 50 ms to `deepcopy` a 50 000-entry state.
+    Durable writes land **on par** with `SqliteSaver` at a matched fsync policy, and
+    in-memory writes are *slower* than `InMemorySaver` (the price of serializing to a
+    portable format). Full methodology, tables and charts — with hardware and versions
+    documented, and the losses reported alongside the wins — are on the
     [Benchmarks](benchmarks.md) page.

@@ -57,3 +57,23 @@ underneath data applications without replacing them.
 
 See the [Guide](guide/store.md) to get started, or the [API reference](api.md) for the
 full surface.
+
+## Citing
+
+If you use `swarmstate` in academic work, please cite it. GitHub's **"Cite this
+repository"** button (from
+[`CITATION.cff`](https://github.com/swarmstate/swarmstate/blob/main/CITATION.cff))
+produces ready-made APA and BibTeX entries. To cite the archived software release, use
+its Zenodo DOI (`10.5281/zenodo.XXXXXXXX`):
+
+```bibtex
+@software{salmeron_swarmstate,
+  author    = {Salmeron, Jose L.},
+  title     = {{swarmstate}: A state and checkpointing backend for multi-agent
+               systems with a Rust core},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.XXXXXXXX},
+  url       = {https://github.com/swarmstate/swarmstate}
+}
+```

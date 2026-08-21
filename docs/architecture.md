@@ -8,14 +8,15 @@ swarmstate/
 ├─ rust/src/
 │  ├─ lib.rs         # #[pymodule] - exports classes to Python
 │  ├─ store.rs       # concurrent KV store + immutable snapshots
-│  ├─ codec.rs       # msgpack (de)serialization
-│  ├─ checkpoint.rs  # LangGraph checkpoint types            (M3)
-│  └─ graph.rs       # handoff/dependency graph               (M2)
+│  ├─ codec.rs       # msgpack (de)serialization, streaming both ways
+│  ├─ condition.rs   # the bounded evaluator behind edge conditions
+│  └─ graph.rs       # handoff/dependency graph
 └─ python/swarmstate/
    ├─ __init__.py       # public API: Store, Snapshot, HandoffGraph, dumps/loads
    ├─ _core.pyi         # type stubs for the Rust module
+   ├─ protocols.py      # the store contract, for type checking
    ├─ observability.py  # opt-in metrics sinks for checkpoint ops
-   ├─ integrations/     # langgraph.py, crewai.py                 (M3, M5)
+   ├─ integrations/     # langgraph.py, crewai.py
    └─ backends/         # disk.py, redis.py, postgres.py          (persistent stores)
 ```
 
@@ -23,14 +24,22 @@ swarmstate/
 
 - **Hot logic lives in Rust.** Serialization, snapshot diffs and (later) graph
   traversal run entirely in the Rust core.
-- **The GIL is released** (`py.allow_threads`) on any operation that doesn't touch
+- **The interpreter is detached** (`py.detach`) on any operation that doesn't touch
   Python objects - lock acquisition, map mutation, snapshot cloning.
 - **Sharded write locking.** Namespaces are hashed across independent `RwLock`s, so
   concurrent writers to different namespaces don't serialize on one global lock. (On
   standard CPython the GIL still serializes the serialization step; the sharding removes
   the lock bottleneck for free-threaded builds.)
 - **Immutable snapshots via structural sharing.** The store is backed by a persistent
-  `im::HashMap`; cloning it is O(1) and snapshots are isolated from later writes.
+  `imbl::HashMap`; cloning it is O(1) and snapshots are isolated from later writes. The
+  same property makes `diff` cost the *changes* rather than the size of the store:
+  untouched shards and namespaces are literally the same structure in both snapshots, so
+  pointer identity settles them without a walk.
+- **Values are reference-counted.** Stored bytes are `Arc<[u8]>`, so handing a value to
+  Python is a refcount bump rather than a copy of the payload.
+- **Recursion over user data is bounded.** Both codec directions cap nesting at 128
+  levels: a runaway or self-referential structure raises `ValueError` instead of
+  exhausting the native stack and taking the interpreter with it.
 - **Stable, language-neutral state format.** Values serialize to msgpack so state is
   readable from any language or framework - the antidote to state lock-in. The same wire
   format backs every persistent backend ([disk](guide/disk.md), [redis](guide/redis.md),
@@ -43,7 +52,7 @@ swarmstate/
 ## Free-threaded (no-GIL)
 
 The store shards its write locks and releases the GIL on the hot paths, so on a
-**free-threaded CPython build** (`cp313t`, [PEP 703](https://peps.python.org/pep-0703/))
+**free-threaded CPython build** (`cp313t` / `cp314t`, [PEP 703](https://peps.python.org/pep-0703/))
 it does not serialize behind the interpreter lock. The Rust core declares support with
 `m.gil_used(false)`, so importing it does not force the GIL back on.
 
@@ -60,7 +69,7 @@ roughly flat. Median of 5 runs, set+get, Apple Silicon:
 
 So single-threaded the free-threaded build is roughly 2x (no per-call GIL machinery), and at
 8 threads it sustains over **10x** the throughput of the GIL build, which has collapsed.
-Version-specific `cp313t` wheels ship for Linux (x86_64/aarch64), macOS (arm64) and Windows
+Version-specific `cp313t` and `cp314t` wheels ship for Linux (x86_64/aarch64), macOS (arm64) and Windows
 (x64) alongside the abi3 wheels (free-threaded builds can't use the stable ABI).
 
 Batch operations ([`set_many`/`get_many`](guide/store.md#batch-reads-and-writes)) help

@@ -31,14 +31,14 @@ choice for most cases.
 
 ```python
 store = ss.Store()                           # in-memory, msgpack (defaults)
-store = ss.Store(max_history=100)            # keep at most 100 snapshots
+store = ss.Store(max_history=100)            # also keep the last 100 snapshots
 ```
 
 | Parameter | Default | Meaning |
 | --- | --- | --- |
-| `backend` | `"memory"` | where state lives. `"memory"` today; for persistence use [`RedisStore`](redis.md). |
+| `backend` | `"memory"` | where state lives. `"memory"` today; for persistence use [`DiskStore`](disk.md), [`RedisStore`](redis.md) or [`PostgresStore`](postgres.md). |
 | `codec` | `"msgpack"` | how values are serialized. msgpack is stable and cross-language. |
-| `max_history` | `None` | how many snapshots to retain (`None` = unlimited). Cap it in long-running processes to bound memory. |
+| `max_history` | `0` | how many snapshots the *store* retains for you: `0` none, `n` the last `n`, `None` unlimited. See [retention](snapshots.md#retention) — a retained snapshot pins the state it saw, so the default keeps none. |
 
 ## Reading and writing
 
@@ -83,9 +83,23 @@ dominates. On a free-threaded build the win is larger still (see
 ```python
 store.keys("agents")        # keys within one namespace  -> ["researcher", ...]
 store.namespaces()          # every namespace             -> ["agents", "workflow", ...]
+"agents" in store           # does this namespace hold anything?
 len(store)                  # total (namespace, key) entries
 store.clear()               # wipe everything (snapshots you already took are kept)
 ```
+
+Namespaces are usually structured (`tenant:thread:...`), so both listings can filter
+*inside* the store instead of copying every name out first — which matters once there are
+thousands of them:
+
+```python
+store.namespaces(prefix="wf:t42:")   # only this thread's namespaces
+store.keys("wf", prefix="task-")     # only keys under that prefix
+store.max_key("wf")                  # greatest key, without building a list
+```
+
+The match is literal: a `_`, `%`, `*` or `[` inside a thread id is never treated as a
+wildcard, on any backend.
 
 ## What you can store
 
@@ -103,6 +117,10 @@ store.get("bin", "blob")                     # -> b"\x00\x01\xff"
 Anything else (a custom object, a set, a NumPy array) raises `TypeError`, and integers
 beyond the 64-bit range raise `ValueError` - so serialization problems surface
 immediately at `set()` time, not later.
+
+Nesting is capped at **128 levels**: deeper than that, or self-referential, raises
+`ValueError`. The walkers recurse, and an unbounded one would exhaust the native stack and
+take the interpreter down with it — an error is always the better outcome.
 
 ## Why it's safe to share across threads
 
