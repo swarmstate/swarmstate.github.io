@@ -46,6 +46,22 @@ graph = builder.compile(checkpointer=saver)
 | [`RedisStore`](redis.md) | yes | yes (networked) | yes (Redis) |
 | **`PostgresStore`** | **yes** | **yes (networked)** | yes (Postgres) |
 
+## Connections
+
+Connections come from a `psycopg_pool` pool (`max_size=8` by default), so concurrent
+workers are not serialized through one connection — which is the point of choosing Postgres
+in the first place:
+
+```python
+store = PostgresStore("postgresql://user:pass@host/db", max_size=16)
+store = PostgresStore(conn=my_connection)   # opt out: single connection, mutex-guarded
+```
+
+An install without `psycopg_pool` falls back to the single-connection path automatically.
+Like [`DiskStore`](disk.md), `max_key` is answered from the primary-key index, so the
+LangGraph saver resolves "newest checkpoint" with an indexed query and writes no pointer
+row.
+
 ## Layout & parameters
 
 A single table `(ns text, k text, v bytea, primary key (ns, k))` (default name

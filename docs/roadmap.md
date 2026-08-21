@@ -23,14 +23,18 @@ Beyond the initial milestones, these have shipped:
 | **Sharded write locking** | namespace-hashed `RwLock`s so writers to different namespaces don't serialize (removes the lock bottleneck for free-threaded builds) | ✅ done |
 | **Observability** | opt-in [metrics hooks](guide/observability.md) on `put`/`put_writes`/`get_tuple` with in-memory and OpenTelemetry sinks (`swarmstate[otel]`), plus OpenTelemetry tracing | ✅ done |
 | **Batch operations** | [`Store.set_many` / `get_many`](guide/store.md#batch-reads-and-writes) and on every backend: one GIL release / round-trip per batch | ✅ done |
-| **Free-threaded (no-GIL)** | Rust core declares `gil_used(false)`; version-specific [`cp313t` wheels](architecture.md#free-threaded-no-gil) where the store holds throughput under threads instead of collapsing (~10x the GIL build at 8 threads) | ✅ done |
+| **Free-threaded (no-GIL)** | Rust core declares `gil_used(false)`; version-specific [`cp313t` and `cp314t` wheels](architecture.md#free-threaded-no-gil) where the store holds throughput under threads instead of collapsing (~10x the GIL build at 8 threads) | ✅ done |
+| **Bounded memory** | [`SwarmStateSaver(max_checkpoints_per_thread=N)`](guide/langgraph.md#retention) trims old checkpoints with their writes and channel blobs; `Store(max_history=...)` governs retained snapshots and defaults to keeping none | ✅ done |
+| **One store contract** | [`swarmstate.protocols`](api.md#swarmstateprotocols) writes the store interface down for type checking, and a conformance suite runs the same assertions against every bundled backend | ✅ done |
 | **Developer experience** | strict `mypy` in CI, exposed `dumps`/`loads` codec, runnable [examples](https://github.com/swarmstate/swarmstate/tree/main/examples) | ✅ done |
 
 ## Under consideration
 
 - **Docs versioning** (per-release documentation) once a stable line is cut.
-- **`cp314t` wheels** once PyO3 supports free-threaded 3.14 (today the free-threaded
-  wheels target `cp313t`).
+- **LangGraph `BaseStore` and `BaseCache`** — long-term memory and node caching on the
+  same engine, alongside the checkpointer.
+- **More codec types** — `datetime`, `UUID`, `Decimal` and `set` via documented msgpack
+  extension types, instead of the current `TypeError`.
 
 ## Guiding rules
 

@@ -1,0 +1,10 @@
+# MkDocs build output — the site is built by CI, never committed.
+/site
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# OS
+**/.DS_Store

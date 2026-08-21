@@ -6,12 +6,18 @@ conversation (a *thread*) can be paused, resumed, inspected, or rewound. LangGra
 every step commits to disk).
 
 `SwarmStateSaver` is a **drop-in replacement** for either: same
-`BaseCheckpointSaver` interface (`put`, `put_writes`, `get_tuple`, `list`, plus the async
-variants), but backed by a swarmstate [`Store`](store.md) with a Rust core. You get
-faster checkpoints than SQLite (see the [benchmarks](../benchmarks.md)), and - because the
-state lives in a `Store` - the ability to snapshot or roll back **every thread at once**.
-Point it at a persistent backend ([`DiskStore`](disk.md), [`RedisStore`](redis.md) or
-[`PostgresStore`](postgres.md)) and those checkpoints survive restarts, too.
+`BaseCheckpointSaver` interface (`put`, `put_writes`, `get_tuple`, `list`,
+`delete_thread`, plus the async variants), but backed by a swarmstate [`Store`](store.md)
+with a Rust core. What you get is **read latency that does not drift as a thread grows**
+(see the [benchmarks](../benchmarks.md)) and - because the state lives in a `Store` - the
+ability to snapshot or roll back **every thread at once**. Point it at a persistent backend
+([`DiskStore`](disk.md), [`RedisStore`](redis.md) or [`PostgresStore`](postgres.md)) and
+those checkpoints survive restarts, too.
+
+Writes are a different story, and worth stating plainly: durable writes land **on par**
+with `SqliteSaver` at a matched fsync policy, and in-memory writes are *slower* than
+`InMemorySaver`, because state is serialized to msgpack on the way in. That serialization
+is what buys the portability and the cheap snapshots.
 
 ```bash
 pip install "swarmstate[langgraph]"
@@ -34,6 +40,22 @@ config = {"configurable": {"thread_id": "user-42"}}
 graph.invoke({"messages": [("user", "hi")]}, config)
 graph.get_state(config)          # resumes from the persisted checkpoint
 ```
+
+## Why reads stay flat
+
+Resuming a thread means answering "which checkpoint is the newest?". The reference savers
+scan the thread's keys for the maximum, so a thread that has run for a week costs more per
+resume than a fresh one. `SwarmStateSaver` looks it up instead:
+
+- **in-memory and Redis stores** — the saver publishes a *latest pointer* next to each
+  checkpoint, in the same batched write, and reads it in O(1).
+- **SQL backends** ([`DiskStore`](disk.md), [`PostgresStore`](postgres.md)) — no pointer at
+  all: they answer `max_key` from the `(namespace, key)` primary-key index, which is both
+  always current and one row less to write per step.
+
+Either way the answer is `max(checkpoint_id)`, matching `InMemorySaver`, and it comes from
+the store — so two savers, or two processes, sharing one backend always agree on which
+checkpoint is newest.
 
 ## Share one store across graphs
 
@@ -62,6 +84,23 @@ snap = saver.store.snapshot()     # O(1) snapshot of all threads
 # ... run more turns across many threads ...
 saver.store.restore(snap)         # roll everything back
 ```
+
+## Retention
+
+Checkpointers keep every step by default. For a service that never restarts, that is
+unbounded growth:
+
+```python
+saver = SwarmStateSaver(max_checkpoints_per_thread=8)   # keep the newest N per thread
+```
+
+Older checkpoints are dropped along with their pending writes and, in incremental mode,
+the channel blobs no surviving checkpoint still references. On a 300-invocation thread
+that is **0.5 MB instead of 28 MB**, and the thread still resumes.
+
+Two things to know: trimming happens in batches, so a thread sits slightly above the limit
+before it is cut back (the limit is a bound, not an exact length), and time travel is
+limited to the retained window — size it to the history you actually want to rewind to.
 
 ## Serialization
 

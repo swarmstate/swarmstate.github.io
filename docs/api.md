@@ -12,7 +12,7 @@ and the `RedisStore` backend live in `swarmstate.integrations.*` / `swarmstate.b
 ## `swarmstate.Store`
 
 ```python
-Store(backend: str = "memory", codec: str = "msgpack", max_history: int | None = None)
+Store(backend: str = "memory", codec: str = "msgpack", max_history: int | None = 0)
 ```
 
 A framework-agnostic state store with immutable snapshots.
@@ -22,7 +22,7 @@ A framework-agnostic state store with immutable snapshots.
 | Property | Type | Description |
 | --- | --- | --- |
 | `codec` | `str` | serialization codec in use (currently `"msgpack"`) |
-| `max_history` | `int \| None` | max retained snapshots (`None` = unlimited) |
+| `max_history` | `int \| None` | snapshots the store retains: `0` none (default), `n` the last `n`, `None` unlimited |
 
 **Methods**
 
@@ -34,15 +34,20 @@ A framework-agnostic state store with immutable snapshots.
 | `get_many(pairs)` | `list[Any]` | fetch many `(namespace, key)` pairs in input order; missing entries come back as `None` |
 | `contains(namespace, key)` | `bool` | whether `(namespace, key)` exists |
 | `delete(namespace, key)` | `bool` | delete; `True` if a value was removed |
-| `keys(namespace)` | `list[str]` | keys within a namespace |
-| `namespaces()` | `list[str]` | all namespaces |
+| `keys(namespace, prefix=None)` | `list[str]` | keys within a namespace, optionally only those starting with `prefix` |
+| `namespaces(prefix=None)` | `list[str]` | all namespaces, optionally only those starting with `prefix` (filtered inside the store, so only matches are copied out) |
+| `max_key(namespace)` | `str \| None` | greatest key in a namespace, without building a key list |
 | `clear()` | `None` | remove all entries (keeps snapshot history) |
 | `snapshot()` | `Snapshot` | capture a cheap, immutable snapshot |
 | `restore(snapshot)` | `None` | roll back to a snapshot |
+| `history()` | `list[Snapshot]` | snapshots the store retained, oldest first (empty unless `max_history` was set) |
+| `clear_history()` | `None` | drop every retained snapshot, releasing the state they pin |
 | `len(store)` | `int` | total number of entries |
+| `namespace in store` | `bool` | whether a namespace holds at least one key |
 
-Raises `TypeError` for unsupported value types and `ValueError` for an unknown
-`backend`/`codec` or out-of-range integers.
+Raises `TypeError` for unsupported value types, and `ValueError` for an unknown
+`backend`/`codec`, out-of-range integers, or a value nested deeper than 128 levels
+(including self-referential ones).
 
 ## `swarmstate.Snapshot`
 
@@ -128,6 +133,54 @@ core_version() -> str
 
 Returns the version string of the compiled Rust core (matches
 `swarmstate.__version__`).
+
+## `swarmstate.protocols`
+
+The store interface every backend satisfies, written down for type checking. These are
+typing constructs, not base classes: a store is conformant by having the methods.
+
+```python
+from swarmstate.protocols import StoreLike, SnapshotLike
+
+def build_saver(store: StoreLike) -> SwarmStateSaver:
+    return SwarmStateSaver(store)
+```
+
+`tests/test_store_conformance.py` in the repository runs the same assertions — key/value
+semantics, prefix scans, `max_key`, snapshot metadata, diffs, restore — against every
+bundled backend, so "drop-in" is a checked property rather than a claim.
+
+Two documented differences between implementations, both of which callers can act on:
+`snapshot()` is O(1) on the Rust store and an O(n) copy on the persistent backends; and a
+store whose `max_key` is index-backed advertises `indexed_max_key = True`, which is how
+`SwarmStateSaver` decides whether to keep its own latest pointer.
+
+## `swarmstate.integrations.langgraph.SwarmStateSaver`
+
+```python
+SwarmStateSaver(
+    store: StoreLike | None = None,
+    *,
+    serde: SerializerProtocol | None = None,
+    incremental: bool = False,
+    max_checkpoints_per_thread: int | None = None,
+    metrics: MetricsSink | None = None,
+    tracer: Tracer | None = None,
+)
+```
+
+A drop-in `BaseCheckpointSaver`. See the [LangGraph guide](guide/langgraph.md).
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `store` | `Store()` | the backing store; shareable across savers and graphs |
+| `serde` | LangGraph's default | serializer for checkpoint payloads |
+| `incremental` | `False` | store channel values once per version instead of per step |
+| `max_checkpoints_per_thread` | `None` | keep only the newest N checkpoints of each thread, dropping older ones with their writes and unreferenced blobs |
+| `metrics` | `None` | a [metrics sink](guide/observability.md) for per-operation latency |
+| `tracer` | `None` | an OpenTelemetry tracer; each operation becomes a span |
+
+Raises `ValueError` for `max_checkpoints_per_thread < 1`.
 
 ## `swarmstate.observability`
 
