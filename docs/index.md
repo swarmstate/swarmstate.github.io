@@ -23,9 +23,10 @@ Rust core, framework-agnostic, built for production.</p>
 
 </div>
 
-<img class="ss-stack" src="assets/stack.svg" alt="Isometric architecture: orchestration frameworks (LangGraph, CrewAI, custom loops) on top; the swarmstate Python API (Store, HandoffGraph, SwarmStateSaver) in the middle; the Rust core (persistent store, msgpack codec, snapshot/diff, condition evaluator) over memory/redis/disk cylinders at the bottom." width="1040" height="900" />
+<img class="ss-stack" src="assets/stack.svg" alt="Left: swarmstate sits between your orchestration (LangGraph, CrewAI, a custom loop) and four storage backends (memory, disk, redis, postgres) - the Python API delegates across the PyO3 boundary, GIL released, to the Rust core. Right: three measured results. Reading the newest checkpoint stays flat at about 7.5 microseconds from 5 to 2,000 checkpoints in a thread while InMemorySaver climbs from 5.5 to 40; Store.snapshot() stays at 0.0005 ms as state grows to 50,000 entries where a dict deepcopy costs 50.2 ms; and a durable put lands at 34.1 microseconds p50 against SqliteSaver's 34.7 at the same fsync policy, 63.9 at its shipped default." width="1040" height="716" />
 
-<p class="ss-stack-cap">Where swarmstate sits: underneath your orchestration framework, as the fast state &amp; checkpointing engine.</p>
+<p class="ss-stack-cap" markdown="span">Where swarmstate sits, and what the Rust core costs. Every number is
+reproducible - see [Benchmarks](benchmarks.md).</p>
 
 <div class="ss-features" markdown="1">
 
