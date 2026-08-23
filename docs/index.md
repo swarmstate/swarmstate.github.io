@@ -64,7 +64,8 @@ If you use `swarmstate` in academic work, please cite it. GitHub's **"Cite this
 repository"** button (from
 [`CITATION.cff`](https://github.com/swarmstate/swarmstate/blob/main/CITATION.cff))
 produces ready-made APA and BibTeX entries. To cite the archived software release, use
-its Zenodo DOI (`10.5281/zenodo.XXXXXXXX`):
+its Zenodo DOI ([10.5281/zenodo.22067264](https://doi.org/10.5281/zenodo.22067264)) — it always resolves to the latest
+version:
 
 ```bibtex
 @software{salmeron_swarmstate,
@@ -73,7 +74,7 @@ its Zenodo DOI (`10.5281/zenodo.XXXXXXXX`):
                systems with a Rust core},
   year      = {2026},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.XXXXXXXX},
+  doi       = {10.5281/zenodo.22067264},
   url       = {https://github.com/swarmstate/swarmstate}
 }
 ```
