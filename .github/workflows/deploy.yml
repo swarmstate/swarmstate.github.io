@@ -3,6 +3,10 @@ name: Deploy docs
 on:
   push:
     branches: [main]
+  # Build on PRs too (without deploying), so a broken link or a moved heading
+  # fails review instead of failing the deploy after merge.
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -31,6 +35,8 @@ jobs:
           path: site
 
   deploy:
+    # Only main publishes; a PR stops after proving the site builds.
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
