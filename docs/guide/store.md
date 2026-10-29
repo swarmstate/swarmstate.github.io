@@ -74,6 +74,15 @@ store.get_many([("agents", "researcher"), ("agents", "missing"), ("workflow", "m
 # -> [{"status": "running"}, None, {"step": 3}]
 ```
 
+Deletes batch the same way: `delete_many` removes a list of pairs and `delete_namespace`
+a whole namespace, each returning how many entries existed. The LangGraph saver uses them
+to delete threads and trim old checkpoints.
+
+```python
+store.delete_many([("agents", "researcher"), ("agents", "missing")])   # -> 1
+store.delete_namespace("workflow")                                    # -> 1
+```
+
 This is worth it for bulk loads and for networked backends, where the per-call round-trip
 dominates. On a free-threaded build the win is larger still (see
 [Architecture](../architecture.md#free-threaded-no-gil)).

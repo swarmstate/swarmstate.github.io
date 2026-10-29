@@ -34,6 +34,8 @@ A framework-agnostic state store with immutable snapshots.
 | `get_many(pairs)` | `list[Any]` | fetch many `(namespace, key)` pairs in input order; missing entries come back as `None` |
 | `contains(namespace, key)` | `bool` | whether `(namespace, key)` exists |
 | `delete(namespace, key)` | `bool` | delete; `True` if a value was removed |
+| `delete_many(pairs)` | `int` | delete many `(namespace, key)` pairs in one call; returns how many existed |
+| `delete_namespace(namespace)` | `int` | delete every key in a namespace; returns how many were removed |
 | `keys(namespace, prefix=None)` | `list[str]` | keys within a namespace, optionally only those starting with `prefix` |
 | `namespaces(prefix=None)` | `list[str]` | all namespaces, optionally only those starting with `prefix` (filtered inside the store, so only matches are copied out) |
 | `max_key(namespace)` | `str \| None` | greatest key in a namespace, without building a key list |
@@ -92,7 +94,7 @@ guide](guide/handoff.md) for the condition mini-language.
 | --- | --- | --- |
 | `add_node(name)` | `None` | register a node with no edges |
 | `add_edge(from_node, to, when=None)` | `None` | add a directed edge, optionally guarded by a `when` condition |
-| `route(node, state=None)` | `str \| None` | first matching outgoing edge's target, or `None` |
+| `route(node, state=None)` | `str \| None` | first matching outgoing edge's target, or `None`; `state` is a dict, any mapping, or an object with fields (dataclass, Pydantic model) |
 | `nodes()` | `list[str]` | all nodes, sorted |
 | `edges(node)` | `list[tuple[str, str \| None]]` | outgoing `(to, when)` pairs, insertion order |
 | `has_node(node)` | `bool` | whether a node exists |
@@ -125,6 +127,24 @@ ss.loads(msgpack.packb({"x": 1}))        # -> {"x": 1}
 Supported types: `None`, `bool`, `int` (64-bit), `float`, `str`, `bytes`, `list`,
 `tuple` (returns as `list`), `dict`. Unsupported types raise `TypeError`.
 
+## `swarmstate.copy_store` / `dump_store` / `load_store`
+
+```python
+copy_store(src: StoreLike, dst: StoreLike, *, prefix: str | None = None, batch_size: int = 1000) -> int
+dump_store(store: StoreLike, target: str | PathLike | BinaryIO, *, prefix: str | None = None) -> int
+load_store(source: str | PathLike | BinaryIO, store: StoreLike | None = None) -> StoreLike
+```
+
+Move state between any two backends, or through a portable file. `copy_store` copies every
+entry of `src` (or only namespaces starting with `prefix`) into `dst` and returns how many
+it copied; entries already in `dst` with the same `(namespace, key)` are overwritten.
+`dump_store` writes a store to a file, atomically when given a path, and returns how many
+entries it wrote; `load_store` reads one into `store` (a new in-memory `Store` if `None`)
+and returns it. See the [portability tutorial](tutorials/portability.md#5-move-state-to-another-backend).
+
+`load_store` raises `ValueError` for a file that is not a swarmstate dump, has an
+unsupported version, or is truncated.
+
 ## `swarmstate.core_version()`
 
 ```python
@@ -140,11 +160,16 @@ The store interface every backend satisfies, written down for type checking. The
 typing constructs, not base classes: a store is conformant by having the methods.
 
 ```python
-from swarmstate.protocols import StoreLike, SnapshotLike
+from swarmstate.protocols import AsyncStoreLike, StoreLike, SnapshotLike
 
 def build_saver(store: StoreLike) -> SwarmStateSaver:
     return SwarmStateSaver(store)
 ```
+
+`AsyncStoreLike` extends `StoreLike` with an `a`-prefixed async twin of every key/value
+operation (`aget`, `aset`, `aget_many`, `aset_many`, `acontains`, `adelete`,
+`adelete_many`, `adelete_namespace`, `akeys`, `amax_key`, `anamespaces`, `aclose`) and a
+`supports_async` flag. `RedisStore` and `PostgresStore` implement it.
 
 `tests/test_store_conformance.py` in the repository runs the same assertions — key/value
 semantics, prefix scans, `max_key`, snapshot metadata, diffs, restore — against every
@@ -181,6 +206,28 @@ A drop-in `BaseCheckpointSaver`. See the [LangGraph guide](guide/langgraph.md).
 | `tracer` | `None` | an OpenTelemetry tracer; each operation becomes a span |
 
 Raises `ValueError` for `max_checkpoints_per_thread < 1`.
+
+Besides the core interface (`put`, `put_writes`, `get_tuple`, `list`, `delete_thread`
+and their async twins), it implements:
+
+| Method | Description |
+| --- | --- |
+| `copy_thread(source_thread_id, target_thread_id)` | copy a thread's whole history, so the copy resumes and time-travels like the source |
+| `prune(thread_ids, *, strategy="keep_latest")` | keep the newest checkpoint per namespace (plus what `DeltaChannel` state needs), or `strategy="delete"` |
+| `delete_for_runs(run_ids)` | delete every checkpoint whose metadata `run_id` is listed, with its writes |
+| `get_delta_channel_history(*, config, channels)` | the writes and nearest seed for `DeltaChannel` replay, read directly from the store |
+
+Each has an `a`-prefixed async twin. `prune` raises `ValueError` for an unknown strategy.
+
+## `swarmstate.integrations.langgraph.handoff_router`
+
+```python
+handoff_router(graph: HandoffGraph, node: str, *, default: str | None = None) -> Callable[[Any], str]
+```
+
+A routing function for `add_conditional_edges`: it returns the first matching outgoing
+edge of `node` for the given state, or `default` (LangGraph's `END` when `None`). See the
+[Handoff graph guide](guide/handoff.md#inside-a-langgraph-graph).
 
 ## `swarmstate.observability`
 

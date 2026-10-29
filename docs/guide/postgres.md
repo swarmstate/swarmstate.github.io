@@ -21,7 +21,27 @@ store.get("workflow", "onboarding")     # -> {"step": 3}
 ```
 
 It implements the full interface (`set`, `get`, `contains`, `delete`, `keys`,
-`namespaces`, `clear`, `len(store)`, `snapshot()` / `restore()`), plus `close()`.
+`namespaces`, `clear`, `len(store)`, `snapshot()` / `restore()`, and the batch operations
+`set_many`, `get_many`, `delete_many`, `delete_namespace`), plus `close()`. A `set_many`
+batch is one transaction: all of it lands, or none of it.
+
+## Async
+
+Every key/value operation has an `a`-prefixed async twin (`aget`, `aset_many`, `akeys`,
+...). [`SwarmStateSaver`](langgraph.md#async) awaits them from its async methods, so an
+async graph never parks a worker thread on Postgres:
+
+```python
+store = PostgresStore("postgresql://user:pass@host/db")
+await store.aset("workflow", "onboarding", {"step": 3})
+await store.aget("workflow", "onboarding")          # -> {"step": 3}
+await store.aclose()                                # the async pool of this event loop
+```
+
+A store built from a DSN opens an `AsyncConnectionPool` lazily, one per event loop
+(async connections belong to the loop that opened them), or a single async connection
+without `psycopg_pool`. A store given only `conn=` / `pool=` has no async support unless
+you also pass `apool=`; the saver then falls back to a worker thread.
 
 ## Durable, shared LangGraph checkpoints
 
@@ -65,11 +85,26 @@ row.
 ## Layout & parameters
 
 A single table `(ns text, k text, v bytea, primary key (ns, k))` (default name
-`swarmstate_kv`); `v` is msgpack bytes.
+`swarmstate_kv`); `v` is msgpack bytes. `ns` and `k` use `COLLATE "C"`, so keys order by
+code point like every other backend, and the prefix lookups the LangGraph saver runs on
+each `list()` and `delete_thread()` seek the primary key (Postgres 15+) instead of
+scanning the table.
+
+Tables created by swarmstate 0.11 or earlier keep the database's collation and keep
+working as before. To give one the same behaviour:
+
+```sql
+ALTER TABLE swarmstate_kv
+  ALTER COLUMN ns TYPE text COLLATE "C",
+  ALTER COLUMN k  TYPE text COLLATE "C";
+```
 
 | Parameter | Default | Description |
 | --- | --- | --- |
 | `dsn` | `postgresql:///swarmstate` | libpq connection string |
 | `conn` | `None` | pass an existing `psycopg` connection instead of a DSN |
+| `pool` | `None` | an existing `psycopg_pool.ConnectionPool` for the sync methods |
+| `apool` | `None` | an existing `psycopg_pool.AsyncConnectionPool` for the async ones |
+| `max_size` | `8` | size of the pools the store opens itself |
 | `table` | `"swarmstate_kv"` | table name (validated identifier) |
 | `codec` | `"msgpack"` | value serialization (stable, cross-language) |

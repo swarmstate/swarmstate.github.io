@@ -102,6 +102,44 @@ Two things to know: trimming happens in batches, so a thread sits slightly above
 before it is cut back (the limit is a bound, not an exact length), and time travel is
 limited to the retained window — size it to the history you actually want to rewind to.
 
+Graphs with [`DeltaChannel`](#deltachannel) state keep a little more: such a channel is
+rebuilt from the checkpoints before the newest one, back to its last snapshot, so those
+stay too. Retention still bounds the thread; the bound is just "the newest N plus what
+they are rebuilt from".
+
+## Managing threads
+
+LangGraph's checkpointer interface also defines thread-management operations, which
+`InMemorySaver` and `SqliteSaver` leave unimplemented. `SwarmStateSaver` implements them
+(and their `a`-prefixed async twins):
+
+```python
+saver.copy_thread("user-42", "user-42-experiment")   # full history, parent chain included
+saver.prune(["user-42"])                             # keep only the latest checkpoint
+saver.prune(["user-42"], strategy="delete")          # or remove the thread
+saver.delete_for_runs(["run-7f3a"])                  # drop what one run wrote, everywhere
+```
+
+- **`copy_thread`** copies every checkpoint, pending write and channel blob, so the copy
+  resumes and time-travels like the source and then moves on independently.
+- **`prune`** with `"keep_latest"` keeps the newest checkpoint of each checkpoint
+  namespace, plus what `DeltaChannel` state is rebuilt from.
+- **`delete_for_runs`** matches the `run_id` LangGraph records in each checkpoint's
+  metadata, which comes from `config["metadata"]["run_id"]`. Give each run its own
+  `run_id`: LangGraph reads a repeated one as re-entering the same run. It reads the
+  metadata of every checkpoint, so it is an administrative operation, not a hot path.
+
+## DeltaChannel
+
+LangGraph 1.2 adds `DeltaChannel`, a reducer channel that stores a value only at snapshot
+points and rebuilds it in between by replaying the writes of earlier checkpoints, through
+the saver's `get_delta_channel_history`. LangGraph's default implementation rebuilds a full
+`CheckpointTuple` - every channel value, all metadata, every pending write - for each
+ancestor, and the chain can run up to the channel's `snapshot_frequency` (1000 by default)
+checkpoints long. `SwarmStateSaver` reads the stored records directly and decodes only the
+requested channel: **2.2x faster** with `incremental=True`, 1.3x without, on a chain of 100
+runs.
+
 ## Serialization
 
 By default the saver uses LangGraph's `JsonPlusSerializer` (so it handles the same
@@ -159,7 +197,14 @@ Full details in the [Observability guide](observability.md).
 
 ## Async
 
-The async methods (`aput`, `aput_writes`, `aget_tuple`, `alist`) run the store work on a
-worker thread (`asyncio.to_thread`), so they don't block the event loop; the store
-releases the GIL on its hot paths, so that work overlaps with the loop. `ainvoke` /
-`astream` and async graphs work out of the box.
+`ainvoke` / `astream` and async graphs work out of the box. How the async methods
+(`aput`, `aput_writes`, `aget_tuple`, `alist`) reach the store depends on the backend:
+
+- **[`RedisStore`](redis.md) and [`PostgresStore`](postgres.md)** have a native async API,
+  and the saver awaits it directly: no worker thread blocks on the network.
+- **The in-memory `Store` and [`DiskStore`](disk.md)** run each call on a worker thread
+  (`asyncio.to_thread`), so it doesn't block the event loop; the Rust store releases the
+  GIL on its hot paths, so that work overlaps with the loop.
+
+Administrative operations (`adelete_thread`, `acopy_thread`, `aprune`,
+`adelete_for_runs`) always take the worker-thread route.

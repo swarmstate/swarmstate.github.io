@@ -33,7 +33,8 @@ reproducible - see [Benchmarks](benchmarks.md).</p>
 <div class="ss-card" markdown="1">
 ### No state lock-in
 A framework-agnostic store with a stable, language-neutral (msgpack) format.
-Migrate between frameworks without losing accumulated state.
+Migrate between frameworks without losing accumulated state, and move it between
+backends or through a file with `copy_store` / `dump_store`.
 </div>
 
 <div class="ss-card" markdown="1">
@@ -45,7 +46,7 @@ diffs. The GIL is released on the hot paths.
 <div class="ss-card" markdown="1">
 ### Deterministic routing
 Rule-based "which agent is next" decisions resolved natively in Rust - no LLM
-tokens spent on transitions you can express as rules.
+tokens spent on transitions you can express as rules, in LangGraph via `handoff_router`.
 </div>
 
 </div>

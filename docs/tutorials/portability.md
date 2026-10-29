@@ -82,10 +82,44 @@ after.diff(before)
 # {'added': [], 'removed': [], 'changed': [('workflow', 'onboarding')]}
 ```
 
+## 5. Move state to another backend
+
+Sharing one store covers systems that run side by side. When the state has to *move* -
+from the in-memory `Store` of a prototype to Postgres in production, from Redis to a SQLite
+file for a bug report - `copy_store` carries every entry from any store to any other:
+
+```python
+import swarmstate as ss
+from swarmstate.backends.postgres import PostgresStore
+
+prod = PostgresStore("postgresql://user:pass@host/db")
+ss.copy_store(store, prod)                          # -> number of entries copied
+ss.copy_store(store, prod, prefix="orders")         # or only namespaces with this prefix
+```
+
+LangGraph checkpoints are entries like any other, so a `SwarmStateSaver` over `prod`
+resumes every copied thread.
+
+## 6. Carry state in a file
+
+`dump_store` writes a store to a portable file and `load_store` reads it back - into a new
+in-memory `Store`, or into any store you pass. It is the simplest way to keep an in-memory
+store across a restart:
+
+```python
+ss.dump_store(store, "state.swst")                  # written atomically
+store = ss.load_store("state.swst")                 # a fresh Store with every entry
+ss.load_store("state.swst", prod)                   # or into an existing store
+```
+
+The file is a short header followed by one msgpack-encoded `[namespace, key, value]` per
+entry, each prefixed with its 4-byte length, so it is readable without swarmstate too.
+
 ## Recap
 
 - One `Store`, many frameworks - **no state lock-in**.
 - The msgpack format is stable and **cross-language**.
 - `snapshot().diff()` gives you an audit trail of exactly what changed.
+- `copy_store`, `dump_store` and `load_store` move state between backends and through files.
 
 Next: [use the store as CrewAI memory](crewai.md).
